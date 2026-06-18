@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARD Developers — Event Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#1A6B5E;--teal-l:#22897A;--teal-xl:#2BA090;
+  --gold:#C9A84C;--gold-l:#E8C97A;
+  --dark:#050E0C;--dark2:#0A1714;--dark3:#0E1E1A;
+  --text:#F0F5F4;--muted:rgba(240,245,244,0.52);--border:rgba(26,107,94,0.2);
+  --s1:#FFD700;--s2:#C0C0C0;--s3:#CD7F32;
+}
+html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh}
+
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:13px 28px;background:rgba(5,14,12,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
+.nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none}
+.nav-logo{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-logo svg{width:20px;height:20px;stroke:white;fill:none;stroke-width:2.2}
+.nav-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.05em}
+.nav-title span{color:var(--gold)}
+.nav-tabs{display:flex;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:4px}
+.nav-tab{padding:7px 18px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'DM Sans';transition:all .2s}
+.nav-tab.active{background:var(--teal);color:white}
+.pool-badge{display:flex;align-items:center;gap:6px;background:rgba(26,107,94,.12);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--teal-l);white-space:nowrap}
+.pool-badge strong{font-family:'DM Mono';color:var(--text)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ─── VIEWS ─── */
+.view{display:none;padding-top:70px;min-height:100vh}
+.view.active{display:block}
+
+/* ══════════════════════
+   LANDING VIEW
+══════════════════════ */
+/* hero replaced by hero-form-split */
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold-l);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:6px 18px;border-radius:40px;margin-bottom:20px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 2s infinite}
+.hero-title{font-family:'Bebas Neue';font-size:clamp(54px,11vw,118px);line-height:.9;margin-bottom:10px}
+.hero-title .g{color:var(--gold)}
+.hero-sub{font-size:clamp(11px,2vw,14px);font-weight:300;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.hero-tagline{font-size:14px;color:rgba(240,245,244,.68);max-width:400px;line-height:1.7;margin-bottom:24px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.btn-p{background:linear-gradient(135deg,var(--teal),var(--teal-xl));color:white;border:none;border-radius:10px;padding:14px 32px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans';transition:all .25s}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(26,107,94,.45)}
+.btn-g{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:14px 28px;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans';transition:all .2s;text-decoration:none;display:inline-flex;align-items:center}
+.btn-g:hover{border-color:var(--teal-l);background:rgba(26,107,94,.08)}
+
+/* Benefits */
+.benefits{padding:44px 24px;display:flex;justify-content:center;background:var(--dark)}
+.b-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:860px;width:100%}
+.b-item{background:var(--dark);padding:22px 18px;text-align:center}
+.b-icon{font-size:24px;margin-bottom:10px}
+.b-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.b-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Lead Form */
+/* form-section replaced by hero-form-split */
+.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;text-align:center}
+.sec-title{font-family:'Bebas Neue';font-size:clamp(36px,7vw,70px);text-align:center;line-height:1;margin-bottom:8px}
+.sec-desc{color:var(--muted);font-size:14px;text-align:center;max-width:400px;line-height:1.7;margin-bottom:28px}
+.form-card{background:rgba(13,22,20,.9);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:460px;backdrop-filter:blur(22px);box-shadow:0 0 70px rgba(26,107,94,.1),inset 0 1px 0 rgba(255,255,255,.04)}
+.f-label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.f-input{width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(26,107,94,.26);border-radius:9px;color:var(--text);font-size:14px;font-family:'DM Sans';outline:none;transition:border-color .2s;margin-bottom:16px}
+.f-input::placeholder{color:rgba(240,245,244,.2)}
+.f-input:focus{border-color:var(--teal-l);background:rgba(26,107,94,.06)}
+.f-input.err{border-color:#E24B4A}
+.d-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.d-opt{border:1px solid var(--border);border-radius:9px;padding:12px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:transparent;font-family:'DM Sans';width:100%}
+.d-opt svg{width:16px;height:16px;flex-shrink:0}
+.d-opt.active{border-color:var(--gold);background:rgba(201,168,76,.08);color:var(--gold-l)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;background:transparent;font-family:'DM Sans'}
+.chip.active{border-color:var(--teal-l);color:var(--text);background:rgba(26,107,94,.18)}
+.sub-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--teal),var(--teal-xl));border:none;border-radius:10px;color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans';transition:all .25s;position:relative;overflow:hidden}
+.sub-btn:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(26,107,94,.4)}
+.shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transform:skewX(-20deg)}
+.sub-btn:hover .shine{animation:shine .5s forwards}
+@keyframes shine{to{left:160%}}
+.f-note{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
+.success-view{display:none;text-align:center;padding:16px 0}
+.s-icon{width:56px;height:56px;border-radius:50%;background:rgba(26,107,94,.2);border:2px solid var(--teal-l);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px}
+.s-box{background:rgba(26,107,94,.1);border:1px solid rgba(26,107,94,.3);border-radius:10px;padding:14px;margin-top:20px}
+
+/* ── SINGLE SOCIAL SECTION ── */
+.social-section{padding:44px 24px;background:var(--dark3);display:flex;flex-direction:column;align-items:center}
+.social-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:680px;width:100%;margin-top:20px}
+@media(max-width:600px){.social-grid{grid-template-columns:repeat(2,1fr)}}
+.social-card{display:flex;align-items:center;gap:12px;padding:18px 16px;border-radius:13px;text-decoration:none;border:1px solid var(--border);transition:all .22s;background:rgba(13,22,20,.5)}
+.social-card:hover{transform:translateY(-3px)}
+.sc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sc-icon svg{width:20px;height:20px}
+.sc-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.sc-handle{font-size:11px;color:var(--muted)}
+/* Platform colors */
+
+
+/* Footer */
+.footer{padding:28px 24px 20px;text-align:center;border-top:1px solid var(--border)}
+.footer-logo{font-family:'Bebas Neue';font-size:24px;letter-spacing:.06em;margin-bottom:4px}
+.footer-logo span{color:var(--gold)}
+.footer-copy{font-size:11px;color:rgba(240,245,244,.28);margin-top:8px}
+
+/* ══════════════════════
+   RAFFLE VIEW
+══════════════════════ */
+.raffle-layout{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 70px)}
+@media(max-width:900px){.raffle-layout{grid-template-columns:1fr}}
+.stage{padding:40px 36px;display:flex;flex-direction:column;align-items:center;border-right:1px solid var(--border)}
+.stage-title{font-family:'Bebas Neue';font-size:clamp(40px,6vw,72px);text-align:center;line-height:.95;margin-bottom:6px}
+.stage-title .g{color:var(--gold)}
+.stage-sub{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:32px}
+
+/* Drum */
+.drum-wrap{position:relative;width:300px;height:300px;margin-bottom:20px;flex-shrink:0}
+.drum{width:100%;height:100%;border-radius:50%;border:2px solid var(--border);background:radial-gradient(circle at 30% 30%,var(--dark3),var(--dark));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(26,107,94,.15),inset 0 0 40px rgba(0,0,0,.5)}
+.orbit{position:absolute;inset:0;border-radius:50%;animation:spin 8s linear infinite}
+.orbit2{animation-duration:13s;animation-direction:reverse}
+.orbit3{animation-duration:5s}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.od{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--teal-l);top:0;left:50%;transform:translateX(-50%) translateY(-3px)}
+.od.g{background:var(--gold)}
+.od.sm{width:4px;height:4px}
+.drum-center{z-index:2;position:relative;display:flex;flex-direction:column;align-items:center;gap:5px}
+.name-tape{height:44px;overflow:hidden;width:240px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.4);position:relative}
+.tape-inner{display:flex;flex-direction:column}
+.tape-item{height:44px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono';font-size:15px;font-weight:500;color:var(--teal-xl);letter-spacing:.06em;white-space:nowrap}
+.tape-mask{position:absolute;inset:0;border-radius:8px;background:linear-gradient(to bottom,rgba(5,14,12,.9) 0%,transparent 30%,transparent 70%,rgba(5,14,12,.9) 100%);pointer-events:none;z-index:2}
+.drum-count{font-family:'Bebas Neue';font-size:58px;color:var(--text);line-height:1;margin-top:4px}
+.drum-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.drum-state{font-size:13px;color:var(--muted);margin-bottom:24px;height:20px;text-align:center}
+
+.draw-btn{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--teal),var(--teal-xl));border:none;border-radius:13px;color:white;font-family:'Bebas Neue';font-size:24px;letter-spacing:.06em;padding:15px 44px;cursor:pointer;transition:all .25s;box-shadow:0 6px 30px rgba(26,107,94,.35)}
+.draw-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(26,107,94,.5)}
+.draw-btn:active{transform:scale(.97)}
+.draw-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-glow{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.15),transparent);opacity:0;transition:opacity .3s}
+.draw-btn:hover .btn-glow{opacity:1}
+
+/* Podium */
+.podium-section{margin-top:32px;width:100%;max-width:580px}
+.podium-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:14px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px}
+.pod{flex:1;max-width:165px;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding:18px 8px 14px;transition:all .5s;opacity:0;transform:translateY(30px)}
+.pod.vis{opacity:1;transform:translateY(0)}
+.pod-1{background:linear-gradient(160deg,rgba(255,215,0,.12),rgba(255,215,0,.04));border:1px solid rgba(255,215,0,.3);height:180px}
+.pod-2{background:linear-gradient(160deg,rgba(192,192,192,.1),rgba(192,192,192,.03));border:1px solid rgba(192,192,192,.25);height:145px}
+.pod-3{background:linear-gradient(160deg,rgba(205,127,50,.1),rgba(205,127,50,.03));border:1px solid rgba(205,127,50,.22);height:115px}
+.pod-medal{font-size:26px;margin-bottom:7px}
+.pod-place{font-family:'Bebas Neue';font-size:12px;letter-spacing:.1em;margin-bottom:8px}
+.pod-1 .pod-place{color:var(--s1)} .pod-2 .pod-place{color:var(--s2)} .pod-3 .pod-place{color:var(--s3)}
+.pod-name{font-size:12px;font-weight:600;color:var(--text);text-align:center;line-height:1.3;margin-bottom:3px;word-break:break-word}
+.pod-phone{font-family:'DM Mono';font-size:10px;color:var(--muted)}
+.pod-prize{font-size:10px;font-weight:600;margin-top:5px;padding:3px 7px;border-radius:5px;text-align:center}
+.pod-1 .pod-prize{background:rgba(255,215,0,.15);color:var(--s1)}
+.pod-2 .pod-prize{background:rgba(192,192,192,.12);color:var(--s2)}
+.pod-3 .pod-prize{background:rgba(205,127,50,.12);color:var(--s3)}
+
+/* Panel */
+.panel{display:flex;flex-direction:column;background:var(--dark2)}
+.panel-section{padding:18px 22px;border-bottom:1px solid var(--border)}
+.p-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.p-title svg{width:14px;height:14px;stroke:var(--teal-l);fill:none;stroke-width:2}
+
+.pin-row{display:flex;gap:8px}
+.pin-input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-family:'DM Mono';font-size:14px;outline:none}
+.pin-input:focus{border-color:var(--teal-l)}
+.pin-btn{background:var(--teal);border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;padding:9px 14px;cursor:pointer;font-family:'DM Sans';transition:background .2s}
+.pin-btn:hover{background:var(--teal-l)}
+.pin-err{font-size:11px;color:#F48EB1;margin-top:5px;height:14px}
+.unlocked-msg{font-size:12px;color:var(--teal-l);display:flex;align-items:center;gap:5px}
+
+.ef-input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-family:'DM Sans';font-size:13px;outline:none;margin-bottom:9px}
+.ef-input::placeholder{color:rgba(240,245,244,.2)}
+.ef-input:focus{border-color:var(--teal-l)}
+.ef-input.err{border-color:#E24B4A}
+.ef-row{display:flex;gap:8px;margin-bottom:9px}
+.ef-row .ef-input{margin-bottom:0}
+.ef-add{width:100%;background:linear-gradient(135deg,var(--teal),var(--teal-l));border:none;border-radius:8px;color:white;font-size:13px;font-weight:600;padding:10px;cursor:pointer;font-family:'DM Sans';transition:all .2s}
+.ef-add:hover{transform:translateY(-1px)}
+.bulk-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;padding:8px;cursor:pointer;font-family:'DM Sans';margin-top:7px;transition:all .2s}
+.bulk-btn:hover{border-color:var(--teal-l);color:var(--text)}
+
+.gift-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.gift-medal{font-size:17px;width:26px;text-align:center}
+.gift-input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:7px 11px;color:var(--text);font-family:'DM Sans';font-size:12px;outline:none}
+.gift-input:focus{border-color:var(--teal-l)}
+
+.entries-scroll{max-height:320px;overflow-y:auto;padding:16px 22px}
+.entries-scroll::-webkit-scrollbar{width:3px}
+.entries-scroll::-webkit-scrollbar-thumb{background:var(--teal)}
+.e-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.e-ttl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.e-cnt{font-family:'DM Mono';font-size:13px;color:var(--teal-l)}
+
+.entry-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;margin-bottom:5px;background:rgba(255,255,255,.03);border:1px solid transparent}
+.entry-item.w1{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.06)}
+.entry-item.w2{border-color:rgba(192,192,192,.35);background:rgba(192,192,192,.04)}
+.entry-item.w3{border-color:rgba(205,127,50,.35);background:rgba(205,127,50,.05)}
+.entry-item.nf{animation:flash .6s ease}
+@keyframes flash{0%{background:rgba(26,107,94,.3)}100%{background:rgba(255,255,255,.03)}}
+.av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal-xl));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;color:white}
+.ei-info{flex:1;min-width:0}
+.ei-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ei-phone{font-family:'DM Mono';font-size:10px;color:var(--muted)}
+.ei-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:1px 3px;line-height:1;transition:color .2s}
+.ei-del:hover{color:#F48EB1}
+.ei-badge{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;flex-shrink:0}
+.b1{background:rgba(255,215,0,.2);color:var(--s1)}
+.b2{background:rgba(192,192,192,.15);color:var(--s2)}
+.b3{background:rgba(205,127,50,.15);color:var(--s3)}
+.empty-state{text-align:center;padding:28px 0;color:var(--muted);font-size:13px}
+
+.stats-bar{display:flex;gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.stat{flex:1;background:var(--dark2);padding:12px 10px;text-align:center}
+.stat-n{font-family:'Bebas Neue';font-size:22px}
+.stat-l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.reset-btn{margin:12px 22px;background:transparent;border:1px solid rgba(242,75,74,.2);border-radius:8px;color:rgba(242,75,74,.55);font-size:12px;padding:8px;cursor:pointer;font-family:'DM Sans';transition:all .2s;width:calc(100% - 44px)}
+.reset-btn:hover{border-color:#E24B4A;color:#E24B4A}
+
+/* Modals & overlays */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--dark3);border:1px solid var(--border);border-radius:16px;padding:26px;width:90%;max-width:400px}
+.modal h3{font-family:'Bebas Neue';font-size:22px;margin-bottom:5px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.modal textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:11px;color:var(--text);font-family:'DM Mono';font-size:12px;resize:vertical;min-height:120px;outline:none;margin-bottom:12px}
+.modal-btns{display:flex;gap:8px}
+.modal-ok{flex:1;background:var(--teal);border:none;border-radius:8px;color:white;font-size:14px;font-weight:600;padding:10px;cursor:pointer;font-family:'DM Sans'}
+.modal-cancel{background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:14px;padding:10px 16px;cursor:pointer;font-family:'DM Sans'}
+
+.announce{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(5,14,12,.92);backdrop-filter:blur(14px)}
+.announce.open{display:flex}
+.announce-card{text-align:center;padding:44px 38px;border:1px solid var(--border);border-radius:22px;background:var(--dark3);max-width:380px;width:90%;position:relative;overflow:hidden}
+.announce-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(201,168,76,.12),transparent 60%);pointer-events:none}
+.an-place{font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:12px}
+.an-medal{font-size:60px;margin-bottom:6px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0deg)}}
+.an-name{font-family:'Bebas Neue';font-size:50px;line-height:1;margin-bottom:8px}
+.an-phone{font-family:'DM Mono';font-size:14px;color:var(--muted);margin-bottom:14px}
+.an-prize{display:inline-block;padding:7px 18px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:22px}
+.an-next{background:var(--teal);border:none;border-radius:10px;color:white;font-family:'Bebas Neue';font-size:19px;letter-spacing:.05em;padding:12px 34px;cursor:pointer}
+.an-next:hover{background:var(--teal-l)}
+
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:450;overflow:hidden}
+.cf{position:absolute;opacity:0;animation:fall 3s ease-in forwards}
+@keyframes fall{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(110vh) rotate(720deg)}}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:11px 20px;font-size:13px;color:var(--text);z-index:600;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:rgba(26,107,94,.5);color:#6ECABA}
+.toast.error{border-color:rgba(242,75,74,.4);color:#F48EB1}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s,transform .8s}
+.reveal.vis{opacity:1;transform:translateY(0)}
+
+/* ── SUCCESS SOCIALS ── */
+.success-socials{margin-top:14px;padding:14px;background:rgba(26,107,94,.08);border:1px solid var(--border);border-radius:10px}
+.ss-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ss-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:500;text-decoration:none;transition:all .2s;border:1px solid transparent}
+.ss-btn:hover{transform:translateY(-1px)}
+.s-fb.ss-btn{background:rgba(24,119,242,.1);border-color:rgba(24,119,242,.25);color:#6EA8FE}
+.s-ig.ss-btn{background:rgba(228,64,95,.09);border-color:rgba(228,64,95,.22);color:#F48EB1}
+.s-yt.ss-btn{background:rgba(255,0,0,.09);border-color:rgba(255,0,0,.2);color:#FF7A7A}
+.s-tt.ss-btn{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:var(--text)}
+.s-web.ss-btn{background:rgba(26,107,94,.12);border-color:rgba(26,107,94,.28);color:#6ECABA}
+.s-ard.ss-btn{background:rgba(201,168,76,.09);border-color:rgba(201,168,76,.24);color:var(--gold-l)}
+.integration-status{min-height:18px;margin-top:10px;text-align:center}
+
+/* ── HERO MOTION OVERLAYS ── */
+.hero-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.hero-particle{position:absolute;border-radius:50%;animation:float-up linear infinite;opacity:0}
+@keyframes float-up{0%{opacity:0;transform:translateY(0) scale(0)}20%{opacity:.6}80%{opacity:.4}100%{opacity:0;transform:translateY(-80vh) scale(1.5)}}
+.hero > *:not(.hero-particles){position:relative;z-index:1}
+
+/* ── SCROLL REVEAL VARIANTS ── */
+.reveal-up{opacity:0;transform:translateY(32px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.reveal-up.vis{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-28px);transition:opacity .8s ease,transform .8s ease}
+.reveal-left.vis{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(.94);transition:opacity .7s ease,transform .7s ease}
+.reveal-scale.vis{opacity:1;transform:scale(1)}
+
+/* ── HERO TITLE ANIMATION ── */
+.hero-title{animation:titleReveal 1.2s cubic-bezier(.16,1,.3,1) .2s both}
+@keyframes titleReveal{from{opacity:0;transform:translateY(40px) skewY(3deg)}to{opacity:1;transform:translateY(0) skewY(0deg)}}
+.badge{animation:fadeSlideDown .8s ease .1s both}
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.hero-tagline{animation:fadeIn 1s ease .5s both}
+.hero-btns{animation:fadeIn 1s ease .7s both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── DRUM GLOW PULSE ── */
+.drum{animation:drumPulse 4s ease-in-out infinite}
+@keyframes drumPulse{0%,100%{box-shadow:0 0 60px rgba(26,107,94,.15),inset 0 0 40px rgba(0,0,0,.5)}50%{box-shadow:0 0 90px rgba(26,107,94,.3),0 0 30px rgba(201,168,76,.1),inset 0 0 40px rgba(0,0,0,.5)}}
+
+/* ── BENEFIT CARDS STAGGER ── */
+.b-item{transition:transform .3s ease,background .3s ease}
+.b-item:hover{transform:translateY(-3px);background:rgba(26,107,94,.08)!important}
+.b-item:nth-child(1){animation:fadeIn .8s ease .1s both}
+.b-item:nth-child(2){animation:fadeIn .8s ease .2s both}
+.b-item:nth-child(3){animation:fadeIn .8s ease .3s both}
+.b-item:nth-child(4){animation:fadeIn .8s ease .4s both}
+
+/* ── NAV SCROLL BLUR ── */
+.nav.scrolled{background:rgba(5,14,12,.95);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+
+/* ── SOCIAL CARD HOVER LIFT ── */
+.social-card{transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s,background .2s}
+.social-card:hover{transform:translateY(-5px) scale(1.02)}
+
+/* ── FORM CARD ENTRANCE ── */
+.form-card{animation:cardEntrance .9s cubic-bezier(.16,1,.3,1) .3s both}
+@keyframes cardEntrance{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* ── DRAW BTN PULSE ── */
+.draw-btn:not(:disabled){animation:ctaPulse 3s ease-in-out infinite}
+@keyframes ctaPulse{0%,100%{box-shadow:0 6px 30px rgba(26,107,94,.35)}50%{box-shadow:0 6px 50px rgba(26,107,94,.6),0 0 20px rgba(26,107,94,.2)}}
+
+.footer-links{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:10px 0;font-size:12px}
+.footer-links a{color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.social-section{padding:44px 24px 52px;background:var(--dark3);display:flex;flex-direction:column;align-items:center}
+
+/* ── EMBED GRID ── */
+.embeds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1100px;width:100%;margin-top:24px}
+@media(max-width:900px){.embeds-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.embeds-grid{grid-template-columns:1fr}}
+
+.embed-card{background:rgba(10,23,20,.8);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s,box-shadow .2s}
+.embed-card:hover{border-color:rgba(26,107,94,.45);box-shadow:0 8px 32px rgba(26,107,94,.12)}
+
+.embed-label{display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:12px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);letter-spacing:.02em}
+
+.embed-frame-wrap{flex:1;position:relative;background:var(--dark2);overflow:hidden}
+.embed-frame-wrap iframe{width:100%;height:340px;display:block;border:none}
+.embed-frame-wrap.fb-wrap{min-height:360px;display:flex;align-items:flex-start;justify-content:center;padding:8px;overflow:auto}
+.embed-frame-wrap.ig-wrap{min-height:360px;padding:8px;overflow:auto}
+.embed-frame-wrap.tt-wrap{min-height:360px;padding:0;overflow:auto;background:var(--dark2)}
+.embed-frame-wrap.site-wrap iframe{height:340px;pointer-events:none}
+
+/* iframe no-embed fallback */
+.embed-frame-wrap iframe[src="https://arddevelopers.com"],
+.embed-frame-wrap iframe[src="https://theardcity.com"]{filter:brightness(.9) saturate(.8)}
+
+.embed-follow-btn{display:block;text-align:center;padding:10px 16px;font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.06em;text-transform:uppercase;border-top:1px solid var(--border);transition:all .2s}
+.embed-follow-btn.yt{background:rgba(255,0,0,.08);color:#FF7A7A} .embed-follow-btn.yt:hover{background:rgba(255,0,0,.18)}
+.embed-follow-btn.fb{background:rgba(24,119,242,.08);color:#6EA8FE} .embed-follow-btn.fb:hover{background:rgba(24,119,242,.18)}
+.embed-follow-btn.ig{background:rgba(228,64,95,.08);color:#F48EB1} .embed-follow-btn.ig:hover{background:rgba(228,64,95,.18)}
+.embed-follow-btn.tt{background:rgba(255,255,255,.05);color:var(--text)} .embed-follow-btn.tt:hover{background:rgba(255,255,255,.12)}
+.embed-follow-btn.web{background:rgba(26,107,94,.1);color:#6ECABA} .embed-follow-btn.web:hover{background:rgba(26,107,94,.2)}
+.embed-follow-btn.ard{background:rgba(201,168,76,.08);color:var(--gold-l)} .embed-follow-btn.ard:hover{background:rgba(201,168,76,.18)}
+
+/* ══════════════════════════════════════
+   HERO + FORM SPLIT — Full Viewport
+══════════════════════════════════════ */
+.hero-form-split {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  position: relative;
+  overflow: hidden;
+  padding-top: 64px; /* nav height */
+}
+@media (max-width: 900px) {
+  .hero-form-split { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+}
+
+/* LEFT PANEL */
+.hf-left {
+  display: flex;
+  align-items: center;
+  padding: 48px 48px 48px 52px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 900px) { .hf-left { padding: 40px 24px 24px; align-items: flex-start; } }
+
+.hf-left-inner { max-width: 520px; }
+
+/* RIGHT PANEL */
+.hf-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 24px 12px;
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 900px) { .hf-right { padding: 0 20px 40px; } }
+
+/* Override form-card for embedded context */
+.hf-right .form-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(8,18,16,.92);
+  border: 1px solid rgba(26,107,94,.3);
+  border-radius: 18px;
+  padding: 24px;
+  backdrop-filter: blur(28px);
+  box-shadow: 0 0 80px rgba(26,107,94,.18), inset 0 1px 0 rgba(255,255,255,.05);
+  animation: cardEntrance .9s cubic-bezier(.16,1,.3,1) .2s both;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+.form-card-header { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+
+/* Tighten inputs inside split */
+.hf-right .f-input { margin-bottom: 10px; padding: 10px 14px; font-size: 13px; }
+.hf-right .f-label { margin-bottom: 5px; }
+.hf-right .d-row { gap: 8px; margin-bottom: 10px; }
+.hf-right .d-opt { padding: 10px 10px; font-size: 12px; }
+.hf-right .chips { gap: 6px; margin-bottom: 14px; }
+.hf-right .chip { font-size: 11px; padding: 4px 10px; }
+.hf-right .sub-btn { padding: 12px; font-size: 14px; }
+
+/* Benefit pills on left */
+.hf-pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 24px; }
+.hf-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(26,107,94,.12); border: 1px solid rgba(26,107,94,.25);
+  color: rgba(240,245,244,.8); font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 20px;
+  transition: all .2s;
+}
+.hf-pill:hover { background: rgba(26,107,94,.22); border-color: var(--teal-l); }
+
+.hf-explore { display: inline-flex; align-items: center; font-size: 13px; }
+
+/* Diagonal separator line on desktop */
+@media (min-width: 901px) {
+  .hf-left::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(26,107,94,.3) 20%, rgba(26,107,94,.3) 80%, transparent);
+  }
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="app">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand" onclick="switchView('landing')">
+    <div class="nav-logo"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="2" y="15" width="8" height="8" rx="1"/><path d="M14 15h8M14 19h8M18 15v8"/></svg></div>
+    <span class="nav-title">ARD <span>DEVELOPERS</span></span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-landing" onclick="switchView('landing')">🏠 Event Page</button>
+    <button class="nav-tab" id="tab-raffle" onclick="switchView('raffle')">🎲 Lucky Draw</button>
+  </div>
+  <div class="pool-badge">
+    <span class="live-dot"></span>
+    Pool: <strong id="nav-count">0</strong>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════
+     LANDING VIEW
+════════════════════════════════════ -->
+<div class="view active" id="view-landing">
+
+  <section class="hero-form-split">
+    <!-- 3D city particles overlay -->
+    <div class="hero-particles" id="hero-particles"></div>
+
+    <!-- LEFT: Brand + benefits -->
+    <div class="hf-left">
+      <div class="hf-left-inner">
+        <div class="badge"><span class="badge-dot"></span> Live Event · Exclusive Offers Today</div>
+
+        <h1 class="hero-title">BUILD THE<br><span class="g">FUTURE</span><br>OF PAKISTAN</h1>
+        <p class="hero-sub">ARD Developers · RUDA Phase 1 · ARD City</p>
+        <p class="hero-tagline">10 years of landmark real estate development. Grand City, ARD City, and beyond. Your investment begins here.</p>
+
+        <!-- Benefit pills -->
+        <div class="hf-pills">
+          <span class="hf-pill">🏙️ RUDA Approved</span>
+          <span class="hf-pill">📊 Investor Report</span>
+          <span class="hf-pill">🎲 Lucky Draw Entry</span>
+          <span class="hf-pill">🤝 Free Consultation</span>
+        </div>
+
+        <a class="btn-g hf-explore" href="https://theardcity.com" target="_blank">Explore ARD City ↗</a>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form -->
+    <div class="hf-right">
+      <div class="form-card">
+        <div class="form-card-header">
+          <p class="eyebrow" style="margin-bottom:4px">Exclusive Event Offer</p>
+          <h2 style="font-family:'Bebas Neue';font-size:clamp(22px,3vw,32px);line-height:1;margin-bottom:4px">
+            Get Brochure & <span style="color:var(--gold)">Enter Lucky Draw</span>
+          </h2>
+          <p style="font-size:12px;color:var(--muted);line-height:1.5">Fill in your details to receive the brochure instantly and be entered into today's draw.</p>
+        </div>
+
+        <div id="lead-form">
+          <label class="f-label">Full Name *</label>
+          <input class="f-input" id="lf-name" type="text" placeholder="Muhammad Ali" autocomplete="name"/>
+          <label class="f-label">WhatsApp / Phone *</label>
+          <input class="f-input" id="lf-phone" type="tel" placeholder="+92 300 0000000" autocomplete="tel"/>
+          <label class="f-label">Email</label>
+          <input class="f-input" id="lf-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+          <label class="f-label">Send Brochure Via *</label>
+          <div class="d-row">
+            <button class="d-opt active" id="d-wa" onclick="setD('wa')">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              WhatsApp
+            </button>
+            <button class="d-opt" id="d-em" onclick="setD('em')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Email
+            </button>
+          </div>
+          <label class="f-label">Interested In</label>
+          <div class="chips">
+            <button class="chip active" onclick="tc(this)">Residential Plots</button>
+            <button class="chip" onclick="tc(this)">Commercial Units</button>
+            <button class="chip" onclick="tc(this)">Apartments</button>
+            <button class="chip" onclick="tc(this)">Investment</button>
+            <button class="chip" onclick="tc(this)">Installment Plan</button>
+            <button class="chip" onclick="tc(this)">Overseas Pricing</button>
+          </div>
+          <button class="sub-btn" onclick="submitLead()"><span class="shine"></span>Get Brochure & Enter Draw →</button>
+          <p class="f-note">🎲 Auto-entered into today's Lucky Draw · 🔒 Private</p>
+        </div>
+
+        <div class="success-view" id="success-view">
+          <div class="s-icon">✓</div>
+          <h3 style="font-family:'Bebas Neue';font-size:28px;margin-bottom:6px">You're In the Draw!</h3>
+          <p style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:14px">Your branded PDF brochure is ready to download below.</p>
+          <button class="btn-p" id="pdf-download-btn" style="width:100%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="downloadPDF()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Brochure PDF
+          </button>
+          <div class="success-socials">
+            <p style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Follow ARD Developers</p>
+            <div class="ss-grid">
+              <a class="ss-btn s-fb" href="https://web.facebook.com/arddevelopers/" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>Facebook</a>
+              <a class="ss-btn s-ig" href="https://www.instagram.com/arddevelopers/" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg>Instagram</a>
+              <a class="ss-btn s-yt" href="https://www.youtube.com/@ARDCity.Official" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>YouTube</a>
+              <a class="ss-btn s-tt" href="https://www.tiktok.com/@arddevelopers" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.73a4.85 4.85 0 01-1.01-.04z"/></svg>TikTok</a>
+              <a class="ss-btn s-web" href="https://arddevelopers.com" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>Website</a>
+              <a class="ss-btn s-ard" href="https://theardcity.com" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ARD City</a>
+            </div>
+          </div>
+          <div class="integration-status" id="integration-status"></div>
+          <div class="s-box" style="margin-top:12px">
+            <p style="font-size:10px;color:var(--teal-l);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px">You're Entered</p>
+            <p style="font-size:12px">Stay at the event — winners announced at the <strong>ARD Developers Booth</strong></p>
+          </div>
+          <button class="btn-p" style="margin-top:12px;width:100%;font-size:13px" onclick="switchView('raffle')">Watch the Live Draw 🎲</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- SOCIAL EMBEDS -->
+  <section class="social-section">
+    <p class="eyebrow">Follow Us</p>
+    <h2 class="sec-title" style="margin-bottom:6px">Stay <span style="color:var(--gold)">Connected</span></h2>
+    <p class="sec-desc" style="margin-bottom:28px">Live updates from all our platforms.</p>
+
+    <div class="embeds-grid">
+
+      <!-- ── YOUTUBE ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF7A7A"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.4a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
+          YouTube — ARD City Official
+        </div>
+        <div class="embed-frame-wrap">
+          <iframe
+            src="https://www.youtube.com/embed?listType=user_uploads&list=ARDCity.Official&rel=0&modestbranding=1&controls=1&showinfo=0"
+            title="ARD City YouTube"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            loading="lazy">
+          </iframe>
+        </div>
+        <a class="embed-follow-btn yt" href="https://www.youtube.com/@ARDCity.Official" target="_blank">Subscribe ↗</a>
+      </div>
+
+      <!-- ── FACEBOOK PAGE PLUGIN ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#6EA8FE"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          Facebook — ARD Developers
+        </div>
+        <div class="embed-frame-wrap fb-wrap">
+          <div class="fb-page"
+            data-href="https://www.facebook.com/arddevelopers"
+            data-tabs="timeline"
+            data-width="500"
+            data-height="340"
+            data-small-header="true"
+            data-adapt-container-width="true"
+            data-hide-cover="false"
+            data-show-facepile="false">
+          </div>
+        </div>
+        <a class="embed-follow-btn fb" href="https://web.facebook.com/arddevelopers/" target="_blank">Follow ↗</a>
+      </div>
+
+      <!-- ── INSTAGRAM ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F48EB1" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#F48EB1" stroke="none"/></svg>
+          Instagram — @arddevelopers
+        </div>
+        <div class="embed-frame-wrap ig-wrap">
+          <!-- Instagram latest post embed -->
+          <blockquote class="instagram-media"
+            data-instgrm-permalink="https://www.instagram.com/arddevelopers/"
+            data-instgrm-version="14"
+            style="background:#0D1614;border:1px solid rgba(26,107,94,0.2);border-radius:12px;margin:0;max-width:100%;width:100%;min-width:unset;">
+          </blockquote>
+        </div>
+        <a class="embed-follow-btn ig" href="https://www.instagram.com/arddevelopers/" target="_blank">Follow ↗</a>
+      </div>
+
+      <!-- ── TIKTOK ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--text)"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.73a4.85 4.85 0 01-1.01-.04z"/></svg>
+          TikTok — @arddevelopers
+        </div>
+        <div class="embed-frame-wrap tt-wrap">
+          <blockquote class="tiktok-embed"
+            cite="https://www.tiktok.com/@arddevelopers"
+            data-unique-id="arddevelopers"
+            data-embed-type="creator"
+            style="max-width:100%;min-width:unset;border:none;background:transparent;">
+          </blockquote>
+        </div>
+        <a class="embed-follow-btn tt" href="https://www.tiktok.com/@arddevelopers" target="_blank">Follow ↗</a>
+      </div>
+
+      <!-- ── ARD DEVELOPERS WEBSITE ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6ECABA" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          ARD Developers Website
+        </div>
+        <div class="embed-frame-wrap site-wrap">
+          <iframe
+            src="https://arddevelopers.com"
+            title="ARD Developers Website"
+            frameborder="0"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms">
+          </iframe>
+        </div>
+        <a class="embed-follow-btn web" href="https://arddevelopers.com" target="_blank">Visit Website ↗</a>
+      </div>
+
+      <!-- ── ARD CITY WEBSITE ── -->
+      <div class="embed-card">
+        <div class="embed-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-l)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          ARD City — Official Portal
+        </div>
+        <div class="embed-frame-wrap site-wrap">
+          <iframe
+            src="https://theardcity.com"
+            title="ARD City Website"
+            frameborder="0"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms">
+          </iframe>
+        </div>
+        <a class="embed-follow-btn ard" href="https://theardcity.com" target="_blank">Visit ARD City ↗</a>
+      </div>
+
+    </div><!-- /embeds-grid -->
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-logo">ARD <span>DEVELOPERS</span></div>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:12px">A RUDA-Affiliated Real Estate Development Company</p>
+    <div class="footer-links">
+      <a href="https://arddevelopers.com" target="_blank">Website</a>
+      <a href="https://theardcity.com" target="_blank">ARD City</a>
+      <a href="https://web.facebook.com/arddevelopers/" target="_blank">Facebook</a>
+      <a href="https://www.instagram.com/arddevelopers/" target="_blank">Instagram</a>
+      <a href="https://www.youtube.com/@ARDCity.Official" target="_blank">YouTube</a>
+      <a href="https://www.tiktok.com/@arddevelopers" target="_blank">TikTok</a>
+    </div>
+    <p class="footer-copy">© 2025 ARD Developers · Rawalpindi / Lahore · WhatsApp: +92 337 960 9994</p>
+  </footer>
+
+</div><!-- /view-landing -->
+
+<!-- ═══════════════════════════════════
+     RAFFLE VIEW
+════════════════════════════════════ -->
+<div class="view" id="view-raffle">
+  <div class="raffle-layout">
+
+    <div class="stage">
+      <h1 class="stage-title">LUCKY<br><span class="g">DRAW</span></h1>
+      <p class="stage-sub">ARD Developers · Virtual Balloting</p>
+
+      <div class="drum-wrap">
+        <div class="drum">
+          <div class="orbit" style="inset:8px"><div class="od g"></div><div class="od" style="top:50%;right:0;transform:translateY(-50%) translateX(3px)"></div><div class="od" style="bottom:0;left:50%;transform:translateX(-50%) translateY(3px);opacity:.5"></div></div>
+          <div class="orbit orbit2" style="inset:2px;border:1px dashed rgba(26,107,94,.15);border-radius:50%"><div class="od sm" style="top:25%;left:0;transform:translateY(-50%) translateX(-2px)"></div><div class="od sm g" style="bottom:20%;right:0;transform:translateY(50%) translateX(2px)"></div></div>
+          <div class="orbit orbit3" style="inset:40px;border:1px solid rgba(201,168,76,.08);border-radius:50%"><div class="od" style="top:0;left:40%;background:var(--gold);width:4px;height:4px"></div></div>
+          <div class="drum-center">
+            <div class="name-tape" id="name-tape"><div class="tape-inner" id="tape-inner"><div class="tape-item">— READY —</div></div><div class="tape-mask"></div></div>
+            <div class="drum-count" id="drum-count">0</div>
+            <div class="drum-label">Entries in Pool</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drum-state" id="drum-state">Form entries appear here automatically</div>
+      <button class="draw-btn" id="draw-btn" onclick="startDraw()" disabled><span class="btn-glow"></span>🎲 START DRAW</button>
+
+      <div class="podium-section" id="podium-section" style="display:none">
+        <div class="podium-label">🏆 Today's Winners</div>
+        <div class="podium" id="podium"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <!-- PIN -->
+      <div class="panel-section">
+        <div class="p-title"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Admin Access</div>
+        <div id="pin-gate">
+          <div class="pin-row"><input class="pin-input" id="pin-input" type="password" placeholder="Admin PIN (default: 2025)" maxlength="6" onkeydown="if(event.key==='Enter')checkPin()"/><button class="pin-btn" onclick="checkPin()">Unlock</button></div>
+          <div class="pin-err" id="pin-err"></div>
+        </div>
+        <div id="pin-ok" style="display:none"><span class="unlocked-msg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Admin access granted</span></div>
+      </div>
+
+      <!-- ADD ENTRY (admin) -->
+      <div class="panel-section" id="add-entry-sec" style="display:none">
+        <div class="p-title"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Add Entry Manually</div>
+        <input class="ef-input" id="ef-name" type="text" placeholder="Full Name *"/>
+        <div class="ef-row"><input class="ef-input" id="ef-phone" type="tel" placeholder="Phone *"/><input class="ef-input" id="ef-interest" type="text" placeholder="Interest" style="max-width:130px"/></div>
+        <button class="ef-add" onclick="addEntryManual()">+ Add to Pool</button>
+        <button class="bulk-btn" onclick="openBulk()">📋 Bulk Import CSV</button>
+      </div>
+
+      <!-- PRIZES (admin) -->
+      <div class="panel-section" id="prizes-sec" style="display:none">
+        <div class="p-title"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Prize Configuration</div>
+        <div class="gift-row"><span class="gift-medal">🥇</span><input class="gift-input" id="g1" value="ARD Developers Gift Hamper"/></div>
+        <div class="gift-row"><span class="gift-medal">🥈</span><input class="gift-input" id="g2" value="ARD City Merchandise Set"/></div>
+        <div class="gift-row"><span class="gift-medal">🥉</span><input class="gift-input" id="g3" value="ARD Branded Accessory"/></div>
+      </div>
+
+      <!-- ENTRIES -->
+      <div class="entries-scroll">
+        <div class="e-hdr"><span class="e-ttl">Entry Pool</span><span class="e-cnt" id="e-count-label">0 entries</span></div>
+        <div id="entries-list"><div class="empty-state">No entries yet.<br>Submit the event form to join.</div></div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat"><div class="stat-n" id="stat-total">0</div><div class="stat-l">Total</div></div>
+        <div class="stat"><div class="stat-n" id="stat-winners">0</div><div class="stat-l">Winners</div></div>
+        <div class="stat"><div class="stat-n" id="stat-remaining">0</div><div class="stat-l">Remaining</div></div>
+      </div>
+      <button class="reset-btn" id="reset-btn" style="display:none" onclick="resetDraw()">↺ Reset Draw (Keep Entries)</button>
+    </div>
+  </div>
+</div><!-- /view-raffle -->
+
+</div><!-- /app -->
+
+<!-- BULK MODAL -->
+<div class="modal-bg" id="bulk-modal">
+  <div class="modal">
+    <h3>Bulk Import</h3>
+    <p>One entry per line: <code style="font-size:11px;color:var(--teal-l)">Name, Phone, Interest</code></p>
+    <textarea id="bulk-text" placeholder="Ali Khan, +92300000001, Residential&#10;Sara Ahmed, +92311000002, Commercial&#10;Usman Malik, +92321000003, Investment"></textarea>
+    <div class="modal-btns"><button class="modal-cancel" onclick="closeBulk()">Cancel</button><button class="modal-ok" onclick="importBulk()">Import</button></div>
+  </div>
+</div>
+
+<!-- WINNER ANNOUNCE -->
+<div class="announce" id="announce">
+  <div class="announce-card">
+    <div class="announce-glow"></div>
+    <div class="an-place" id="an-place"></div>
+    <div class="an-medal" id="an-medal"></div>
+    <div class="an-name" id="an-name"></div>
+    <div class="an-phone" id="an-phone"></div>
+    <div class="an-prize" id="an-prize"></div>
+    <button class="an-next" id="an-btn" onclick="nextDraw()"></button>
+  </div>
+</div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ THREE.JS 3D CITY BACKGROUND ══
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x050E0C, 1);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x050E0C, 0.026);
+
+  const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 200);
+  camera.position.set(0, 14, 34);
+  camera.lookAt(0, 3, 0);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0x0D2E2A, 1.4));
+  const dl = new THREE.DirectionalLight(0x22897A, 1.8);
+  dl.position.set(10,20,10); scene.add(dl);
+  const gl = new THREE.PointLight(0xC9A84C, 2.2, 55);
+  gl.position.set(-10,14,-6); scene.add(gl);
+  const gl2 = new THREE.PointLight(0x1A6B5E, 1.5, 42);
+  gl2.position.set(12,10,8); scene.add(gl2);
+
+  // Grid floor
+  const grid = new THREE.GridHelper(100, 50, 0x1A6B5E, 0x0D1614);
+  grid.material.opacity=0.3; grid.material.transparent=true; scene.add(grid);
+
+  // Ground plane
+  const gp = new THREE.Mesh(
+    new THREE.PlaneGeometry(100,100),
+    new THREE.MeshBasicMaterial({color:0x050E0C})
+  );
+  gp.rotation.x=-Math.PI/2; gp.position.y=-0.5; scene.add(gp);
+
+  // Building factory
+  const bColors=[0x0D1E1B,0x0F2420,0x112820,0x0A1A17];
+  function mkBuilding(x,z,w,h,d){
+    const geo=new THREE.BoxGeometry(w,h,d);
+    const mat=new THREE.MeshPhongMaterial({
+      color:bColors[Math.floor(Math.random()*4)],
+      emissive:0x051210, specular:0x1A6B5E, shininess:25
+    });
+    const m=new THREE.Mesh(geo,mat);
+    m.position.set(x, h/2-.5, z); scene.add(m);
+    // Edge glow
+    const edges=new THREE.EdgesGeometry(geo);
+    m.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x1A6B5E,opacity:.18,transparent:true})));
+    // Windows
+    const cols=Math.max(1,Math.floor(w/.85)), rows=Math.max(1,Math.floor(h/1.15));
+    for(let c=0;c<cols;c++) for(let r=0;r<rows;r++){
+      if(Math.random()>.42){
+        const wg=new THREE.PlaneGeometry(.22,.32);
+        const wm=new THREE.MeshBasicMaterial({
+          color:Math.random()>.82?0xC9A84C:0x22897A,
+          opacity:Math.random()*.6+.25, transparent:true
+        });
+        const win=new THREE.Mesh(wg,wm);
+        win.position.set(-w/2+.45+c*(w/cols), -h/2+.9+r*1.05, d/2+.01);
+        m.add(win);
+      }
+    }
+  }
+
+  // City layout
+  const layout=[
+    [-14,0],[-10,0],[-6,0],[-2,0],[2,0],[6,0],[10,0],[14,0],
+    [-14,-9],[-10,-9],[-6,-9],[2,-9],[6,-9],[10,-9],[14,-9],
+    [-14,9],[-10,9],[6,9],[10,9],[14,9],
+    [-18,-4],[-18,4],[18,-4],[18,4],[-22,0],[22,0],
+  ];
+  layout.forEach(([x,z])=>{
+    const h=6+Math.random()*14, w=2.5+Math.random()*2.2;
+    mkBuilding(x+(Math.random()-.5)*1.5, z+(Math.random()-.5)*1.5, w, h, w*.85);
+  });
+  // Hero tower
+  mkBuilding(0,-2,4.5,24,3.8);
+
+  // Star particles
+  const sg=new THREE.BufferGeometry();
+  const sp=new Float32Array(800*3);
+  for(let i=0;i<800;i++){sp[i*3]=(Math.random()-.5)*140;sp[i*3+1]=8+Math.random()*55;sp[i*3+2]=(Math.random()-.5)*140;}
+  sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
+  scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0x22897A,size:.14,transparent:true,opacity:.55})));
+
+  // Scroll + animate
+  let scrollY=0;
+  window.addEventListener('scroll',()=>{scrollY=window.scrollY});
+  let t=0;
+  (function animate(){
+    requestAnimationFrame(animate); t+=.004;
+    camera.position.x=Math.sin(t*.28)*5;
+    camera.position.z=34+scrollY*.007;
+    camera.position.y=14-scrollY*.004;
+    camera.lookAt(0,4,0);
+    gl.intensity=1.8+Math.sin(t*1.4)*.5;
+    gl2.intensity=1.2+Math.cos(t*.9)*.3;
+    renderer.render(scene,camera);
+  })();
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+
+// ── VIEWS ──
+function switchView(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(e=>e.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('tab-'+v).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── STATE ──
+const PIN='2025';
+let entries=[],winners=[],drawStep=0,isDrawing=false,adminOK=false;
+const MED={1:'🥇',2:'🥈',3:'🥉'};
+const PLN={1:'FIRST PLACE',2:'SECOND PLACE',3:'THIRD PLACE'};
+const PLC={1:'var(--s1)',2:'var(--s2)',3:'var(--s3)'};
+const WCL={1:'w1',2:'w2',3:'w3'};
+const BCL={1:'b1',2:'b2',3:'b3'};
+
+// ── LANDING FORM ──
+let dMode='wa';
+function setD(m){dMode=m;document.getElementById('d-wa').classList.toggle('active',m==='wa');document.getElementById('d-em').classList.toggle('active',m==='em')}
+function tc(el){el.classList.toggle('active')}
+
+// ── CONFIG: set your real URLs here ──
+const ZAPIER_WEBHOOK = 'https://hooks.zapier.com/hooks/catch/YOUR_ZAPIER_ID/YOUR_HOOK_ID/';
+const CLICKUP_LIST_ID = 'YOUR_CLICKUP_LIST_ID';
+const CLICKUP_API_KEY = 'pk_YOUR_CLICKUP_API_KEY';
+
+// Active lead — stored for PDF generation
+let activeLead = null;
+
+async function submitLead(){
+  const n=document.getElementById('lf-name').value.trim();
+  const p=document.getElementById('lf-phone').value.trim();
+  ['lf-name','lf-phone'].forEach(id=>document.getElementById(id).classList.remove('err'));
+  let ok=true;
+  if(!n){document.getElementById('lf-name').classList.add('err');ok=false}
+  if(!p){document.getElementById('lf-phone').classList.add('err');ok=false}
+  if(!ok)return;
+
+  const interest=[...document.querySelectorAll('.chip.active')].map(c=>c.textContent).join(', ');
+  const lead={
+    name:n, phone:p,
+    email:document.getElementById('lf-email').value.trim(),
+    delivery:dMode, interest,
+    ts:new Date().toISOString(),
+    source:'Event QR Form',
+    event:'ARD Developers Event 2025'
+  };
+
+  // Lock button during processing
+  const btn=document.querySelector('.sub-btn');
+  btn.disabled=true; btn.textContent='Processing...';
+
+  activeLead = lead;
+  entries.push({...lead, id:entries.length, winner:null});
+  updateAll();
+
+  // Show success screen immediately
+  document.getElementById('lead-form').style.display='none';
+  document.getElementById('success-view').style.display='block';
+  setIntegrationStatus('sending');
+
+  // Fire integrations in parallel — non-blocking
+  const results = await Promise.allSettled([
+    fireZapier(lead),
+    fireClickUp(lead)
+  ]);
+
+  const zapOK  = results[0].status === 'fulfilled';
+  const cuOK   = results[1].status === 'fulfilled';
+  setIntegrationStatus('done', zapOK, cuOK);
+
+  toast(`${n} entered the Lucky Draw! 🎲`, 'success');
+  btn.disabled=false; btn.innerHTML='<span class="shine"></span>Get Brochure & Enter Draw →';
+
+  // Auto-trigger PDF generation after short delay
+  setTimeout(()=>{ generatePDF(lead); }, 600);
+}
+
+// ── ZAPIER WEBHOOK ──
+async function fireZapier(lead){
+  if(!ZAPIER_WEBHOOK.includes('YOUR_ZAPIER_ID')) return Promise.resolve('skipped');
+  const res = await fetch(ZAPIER_WEBHOOK, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      delivery_preference: lead.delivery,
+      interest: lead.interest,
+      source: lead.source,
+      event: lead.event,
+      timestamp: lead.ts
+    })
+  });
+  if(!res.ok) throw new Error('Zapier error: '+res.status);
+  return res;
+}
+
+// ── CLICKUP API ──
+async function fireClickUp(lead){
+  if(CLICKUP_LIST_ID.includes('YOUR_CLICKUP')) return Promise.resolve('skipped');
+  const res = await fetch(`https://api.clickup.com/api/v2/list/${CLICKUP_LIST_ID}/task`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': CLICKUP_API_KEY
+    },
+    body: JSON.stringify({
+      name: `Lead: ${lead.name} — ${lead.phone}`,
+      description: `Event Lead from ARD Developers Event\n\nName: ${lead.name}\nPhone: ${lead.phone}\nEmail: ${lead.email||'N/A'}\nInterest: ${lead.interest}\nDelivery: ${lead.delivery}\nSource: ${lead.source}\nTime: ${new Date(lead.ts).toLocaleString('en-PK')}`,
+      status: 'New Lead',
+      priority: 2,
+      custom_fields: []
+    })
+  });
+  if(!res.ok) throw new Error('ClickUp error: '+res.status);
+  return res;
+}
+
+// ── INTEGRATION STATUS ──
+function setIntegrationStatus(state, zapOK, cuOK){
+  const el = document.getElementById('integration-status');
+  if(!el) return;
+  if(state==='sending'){
+    el.innerHTML='<span style="font-size:11px;color:var(--muted)">⟳ Syncing to CRM...</span>';
+  } else {
+    const parts=[];
+    if(zapOK===undefined||zapOK) parts.push('<span style="color:var(--teal-l)">✓ Webhook</span>');
+    else parts.push('<span style="color:rgba(242,75,74,.7)">⚠ Webhook</span>');
+    if(cuOK===undefined||cuOK) parts.push('<span style="color:var(--teal-l)">✓ ClickUp</span>');
+    else parts.push('<span style="color:rgba(242,75,74,.7)">⚠ ClickUp</span>');
+    el.innerHTML='<span style="font-size:11px;display:flex;gap:12px;justify-content:center">'+parts.join('')+'</span>';
+  }
+}
+
+// ── PDF GENERATION (jsPDF) ──
+function generatePDF(lead){
+  if(typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined'){
+    toast('PDF library loading, try again in a moment','error'); return;
+  }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W=210, H=297;
+  const teal=[26,107,94], gold=[201,168,76], dark=[5,14,12], white=[240,245,244];
+
+  // Background
+  doc.setFillColor(...dark); doc.rect(0,0,W,H,'F');
+
+  // Header band
+  doc.setFillColor(...teal); doc.rect(0,0,W,42,'F');
+
+  // Logo area
+  doc.setFillColor(26,90,78); doc.roundedRect(14,9,24,24,3,3,'F');
+  doc.setTextColor(...white); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text("ARD",26,24,{align:'center'});
+
+  // Company name
+  doc.setFontSize(22); doc.setFont('helvetica','bold');
+  doc.setTextColor(...white);
+  doc.text("ARD DEVELOPERS",44,18);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.setTextColor(180,220,210);
+  doc.text("A RUDA-Affiliated Real Estate Development Company",44,26);
+
+  // Gold accent line
+  doc.setFillColor(...gold); doc.rect(0,42,W,1.5,'F');
+
+  // Thank you section
+  doc.setTextColor(...gold); doc.setFontSize(28); doc.setFont('helvetica','bold');
+  doc.text("THANK YOU,",W/2,68,{align:'center'});
+  doc.setTextColor(...white); doc.setFontSize(26);
+  doc.text(lead.name.toUpperCase()+'!',W/2,80,{align:'center'});
+
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.setTextColor(160,210,200);
+  doc.text("You have been entered into today's Lucky Draw.",W/2,90,{align:'center'});
+  doc.text("Winners will be announced at the ARD Developers Booth.",W/2,96,{align:'center'});
+
+  // Divider
+  doc.setFillColor(...teal); doc.rect(14,104,W-28,0.8,'F');
+
+  // Your Details card
+  doc.setFillColor(10,23,20); doc.roundedRect(14,110,W-28,52,4,4,'F');
+  doc.setFillColor(...teal); doc.roundedRect(14,110,W-28,10,4,4,'F');
+  doc.setTextColor(...white); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text("YOUR REGISTRATION DETAILS",W/2,117,{align:'center'});
+
+  const details=[
+    ['Name', lead.name],
+    ['Phone / WhatsApp', lead.phone],
+    ['Email', lead.email||'—'],
+    ['Interest', lead.interest||'—'],
+    ['Registered', new Date(lead.ts).toLocaleString('en-PK',{dateStyle:'medium',timeStyle:'short'})],
+  ];
+  let y=128;
+  details.forEach(([label,val])=>{
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...gold);
+    doc.text(label.toUpperCase(),20,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...white);
+    doc.text(String(val),85,y);
+    y+=9;
+  });
+
+  // Projects section
+  doc.setFillColor(...teal); doc.rect(14,172,W-28,0.8,'F');
+  doc.setTextColor(...gold); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text("OUR FLAGSHIP PROJECTS",W/2,182,{align:'center'});
+
+  const projects=[
+    {name:'ARD CITY',loc:'Lahore — RUDA Phase 1',desc:'State-of-the-art urban development, Lahore future.'},
+    {name:'GRAND CITY KHARIAN',loc:'Kharian, Punjab',desc:'Established community with strong investment returns.'},
+    {name:'GRAND CITY ARIFWALA',loc:'Arifwala, Punjab',desc:'Affordable living with modern infrastructure.'},
+  ];
+
+  let px=14;
+  projects.forEach(proj=>{
+    doc.setFillColor(10,23,20); doc.roundedRect(px,188,(W-28-12)/3,44,3,3,'F');
+    doc.setFillColor(...teal); doc.roundedRect(px,188,(W-28-12)/3,10,3,3,'F');
+    doc.setTextColor(...white); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+    doc.text(proj.name,px+((W-28-12)/3)/2,195,{align:'center'});
+    doc.setTextColor(...gold); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+    doc.text(proj.loc,px+((W-28-12)/3)/2,201,{align:'center'});
+    doc.setTextColor(180,220,210); doc.setFontSize(6);
+    const lines=doc.splitTextToSize(proj.desc,(W-28-12)/3-6);
+    doc.text(lines,px+3,208);
+    px += (W-28-12)/3 + 6;
+  });
+
+  // Social media links
+  doc.setFillColor(...teal); doc.rect(14,240,W-28,0.8,'F');
+  doc.setTextColor(...gold); doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text("FOLLOW US",W/2,250,{align:'center'});
+
+  const socials=[
+    ['Facebook','facebook.com/arddevelopers'],
+    ['Instagram','@arddevelopers'],
+    ['YouTube','@ARDCity.Official'],
+    ['TikTok','@arddevelopers'],
+    ['Website','arddevelopers.com'],
+    ['ARD City','theardcity.com'],
+  ];
+  let sx=14; let sy=258;
+  socials.forEach(([platform,handle],i)=>{
+    if(i===3){sx=14;sy=266;}
+    doc.setFillColor(16,30,26); doc.roundedRect(sx,sy,(W-28-10)/3,8,2,2,'F');
+    doc.setTextColor(...gold); doc.setFontSize(6); doc.setFont('helvetica','bold');
+    doc.text(platform,sx+3,sy+3.5);
+    doc.setTextColor(180,220,210); doc.setFont('helvetica','normal');
+    doc.text(handle,sx+3,sy+7);
+    sx += (W-28-10)/3 + 5;
+  });
+
+  // Footer
+  doc.setFillColor(...teal); doc.rect(0,280,W,17,'F');
+  doc.setFillColor(...gold); doc.rect(0,280,W,1,'F');
+  doc.setTextColor(...white); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text("ARD DEVELOPERS",W/2,287,{align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.setTextColor(180,220,210);
+  doc.text("Rawalpindi / Lahore, Pakistan  |  WhatsApp: +92 337 960 9994  |  arddevelopers.com",W/2,292,{align:'center'});
+
+  // Entry number watermark
+  doc.setTextColor(26,107,94); doc.setFontSize(6); doc.setFont('helvetica','normal');
+  doc.text(`Entry #${String(entries.length).padStart(4,'0')} · ${new Date().toLocaleDateString('en-PK')}`,W-14,H-3,{align:'right'});
+
+  doc.save(`ARD_Developers_Brochure_${lead.name.replace(/\s+/g,'_')}.pdf`);
+  toast('PDF downloaded! 📄','success');
+}
+
+function downloadPDF(){
+  if(activeLead) generatePDF(activeLead);
+  else toast('Please submit the form first','error');
+}
+
+
+// ── PIN ──
+function checkPin(){
+  if(document.getElementById('pin-input').value===PIN){
+    adminOK=true;
+    document.getElementById('pin-gate').style.display='none';
+    document.getElementById('pin-ok').style.display='block';
+    document.getElementById('add-entry-sec').style.display='block';
+    document.getElementById('prizes-sec').style.display='block';
+    document.getElementById('reset-btn').style.display='block';
+    renderEntries();toast('Admin access granted','success');
+  } else {
+    document.getElementById('pin-err').textContent='Incorrect PIN';
+    document.getElementById('pin-input').value='';
+    setTimeout(()=>document.getElementById('pin-err').textContent='',2000);
+  }
+}
+
+// ── MANUAL ADD ──
+function addEntryManual(){
+  const n=document.getElementById('ef-name').value.trim();
+  const p=document.getElementById('ef-phone').value.trim();
+  const int=document.getElementById('ef-interest').value.trim();
+  ['ef-name','ef-phone'].forEach(id=>document.getElementById(id).classList.remove('err'));
+  let ok=true;
+  if(!n){document.getElementById('ef-name').classList.add('err');ok=false}
+  if(!p){document.getElementById('ef-phone').classList.add('err');ok=false}
+  if(!ok)return;
+  entries.push({id:entries.length,name:n,phone:p,interest:int,ts:new Date().toISOString(),winner:null,source:'Manual'});
+  document.getElementById('ef-name').value='';
+  document.getElementById('ef-phone').value='';
+  document.getElementById('ef-interest').value='';
+  updateAll();toast(`${n} added ✓`,'success');
+}
+
+// ── BULK ──
+function openBulk(){document.getElementById('bulk-modal').classList.add('open')}
+function closeBulk(){document.getElementById('bulk-modal').classList.remove('open')}
+function importBulk(){
+  const raw=document.getElementById('bulk-text').value.trim();
+  if(!raw){toast('Nothing to import','error');return}
+  let added=0;
+  raw.split('\n').filter(l=>l.trim()).forEach(line=>{
+    const pts=line.split(',');
+    const nm=(pts[0]||'').trim(),ph=(pts[1]||'').trim();
+    if(nm&&ph){entries.push({id:entries.length,name:nm,phone:ph,interest:(pts[2]||'').trim(),ts:new Date().toISOString(),winner:null,source:'CSV'});added++}
+  });
+  closeBulk();document.getElementById('bulk-text').value='';
+  updateAll();toast(`${added} entries imported`,'success');
+}
+
+// ── RENDER ──
+function updateAll(){
+  renderEntries();updateDrum();
+  document.getElementById('nav-count').textContent=entries.length;
+  document.getElementById('stat-total').textContent=entries.length;
+  document.getElementById('stat-winners').textContent=winners.length;
+  document.getElementById('stat-remaining').textContent=entries.filter((_,i)=>!winners.find(w=>w.idx===i)).length;
+}
+
+function renderEntries(){
+  const list=document.getElementById('entries-list');
+  document.getElementById('e-count-label').textContent=`${entries.length} entr${entries.length===1?'y':'ies'}`;
+  if(!entries.length){list.innerHTML='<div class="empty-state">No entries yet.<br>Submit the event form to join.</div>';return}
+  list.innerHTML=entries.map((e,i)=>{
+    const w=winners.find(w=>w.idx===i);
+    const ini=e.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    return`<div class="entry-item ${w?WCL[w.place]:''}">
+      <div class="av">${ini}</div>
+      <div class="ei-info"><div class="ei-name">${e.name}</div><div class="ei-phone">${e.phone}${e.interest?' · '+e.interest:''}</div></div>
+      ${w?`<span class="ei-badge ${BCL[w.place]}">${MED[w.place]}</span>`:''}
+      ${!w&&adminOK?`<button class="ei-del" onclick="removeEntry(${i})">×</button>`:''}
+    </div>`;
+  }).join('');
+}
+
+function removeEntry(i){
+  if(winners.find(w=>w.idx===i)){toast('Cannot remove a winner','error');return}
+  entries.splice(i,1);entries.forEach((e,j)=>e.id=j);updateAll();
+}
+
+function updateDrum(){
+  document.getElementById('drum-count').textContent=entries.length;
+  const pool=entries.filter((_,i)=>!winners.find(w=>w.idx===i));
+  const btn=document.getElementById('draw-btn');
+  btn.disabled=pool.length<1||drawStep>=3||isDrawing;
+  if(drawStep>=3){btn.textContent='✓ All 3 Winners Drawn';document.getElementById('drum-state').textContent='Balloting complete!'}
+}
+
+// ── TAPE ──
+let spinIv=null;
+function startTape(pool){clearInterval(spinIv);spinIv=setInterval(()=>{const r=pool[Math.floor(Math.random()*pool.length)];document.getElementById('tape-inner').innerHTML=`<div class="tape-item">${r.name}</div>`;},75)}
+function stopTape(){clearInterval(spinIv);spinIv=null}
+function setFinalTape(n){stopTape();document.getElementById('tape-inner').innerHTML=`<div class="tape-item" style="color:var(--gold-l)">${n}</div>`}
+
+// ── DRAW ──
+function startDraw(){
+  if(isDrawing||drawStep>=3)return;
+  const pool=entries.filter((_,i)=>!winners.find(w=>w.idx===i));
+  if(!pool.length){toast('No eligible entries','error');return}
+  isDrawing=true;
+  const btn=document.getElementById('draw-btn');
+  btn.disabled=true;btn.textContent='🎲 DRAWING...';
+  document.getElementById('drum-state').textContent=`Drawing ${MED[drawStep+1]} ${PLN[drawStep+1]}...`;
+  startTape(pool);
+  setTimeout(()=>{
+    const winner=pool[Math.floor(Math.random()*pool.length)];
+    const idx=entries.indexOf(winner);
+    const place=drawStep+1;
+    winners.push({idx,name:winner.name,phone:winner.phone,place});
+    drawStep++;setFinalTape(winner.name);
+    renderEntries();updateAll();
+    showConfetti(place);
+    setTimeout(()=>showAnnounce(winner,place),350);
+    isDrawing=false;btn.textContent='🎲 START DRAW';updateDrum();updatePodium();
+  },2400+Math.random()*800);
+}
+
+// ── ANNOUNCE ──
+function showAnnounce(entry,place){
+  const prize=document.getElementById(`g${place}`)?document.getElementById(`g${place}`).value:`Prize ${place}`;
+  document.getElementById('an-place').textContent=`${MED[place]} ${PLN[place]} WINNER`;
+  document.getElementById('an-place').style.color=PLC[place];
+  document.getElementById('an-medal').textContent=MED[place];
+  document.getElementById('an-name').textContent=entry.name;
+  document.getElementById('an-phone').textContent=entry.phone;
+  document.getElementById('an-prize').textContent=prize;
+  document.getElementById('an-prize').style.background=`rgba(${place===1?'255,215,0':place===2?'192,192,192':'205,127,50'},.15)`;
+  document.getElementById('an-prize').style.color=PLC[place];
+  document.getElementById('an-btn').textContent=drawStep<3?`Draw ${MED[drawStep+1]} ${PLN[drawStep+1]} →`:'See Full Podium ✓';
+  document.getElementById('announce').classList.add('open');
+}
+function nextDraw(){
+  document.getElementById('announce').classList.remove('open');
+  if(drawStep>=3)document.getElementById('podium-section').style.display='block';
+}
+
+// ── PODIUM ──
+function updatePodium(){
+  const order=[2,1,3];
+  document.getElementById('podium').innerHTML=order.map(place=>{
+    const w=winners.find(x=>x.place===place);
+    const prize=document.getElementById(`g${place}`)?document.getElementById(`g${place}`).value:`Prize ${place}`;
+    if(!w)return`<div class="pod pod-${place}" style="opacity:.15"><div class="pod-medal">${MED[place]}</div><div class="pod-place" style="color:${PLC[place]}">${PLN[place]}</div><div class="pod-name" style="color:var(--muted)">TBD</div></div>`;
+    return`<div class="pod pod-${place} vis"><div class="pod-medal">${MED[place]}</div><div class="pod-place" style="color:${PLC[place]}">${PLN[place]}</div><div class="pod-name">${w.name}</div><div class="pod-phone">${w.phone}</div><div class="pod-prize">${prize}</div></div>`;
+  }).join('');
+  document.getElementById('podium-section').style.display='block';
+}
+
+// ── CONFETTI ──
+const CC=['#C9A84C','#22897A','#FFD700','#F0F5F4','#E8C97A','#2BA090','#fff'];
+function showConfetti(place){
+  const wrap=document.getElementById('confetti-wrap');
+  const n=place===1?90:place===2?55:38;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');el.className='cf';
+    el.style.cssText=`left:${Math.random()*100}%;width:${4+Math.random()*9}px;height:${4+Math.random()*9}px;background:${CC[Math.floor(Math.random()*CC.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*.8}s;animation-duration:${2.5+Math.random()*1.5}s`;
+    wrap.appendChild(el);setTimeout(()=>el.remove(),4500);
+  }
+}
+
+// ── RESET ──
+function resetDraw(){
+  if(!confirm('Reset draw? Winner selections cleared. Entries kept.'))return;
+  winners=[];drawStep=0;isDrawing=false;
+  document.getElementById('tape-inner').innerHTML='<div class="tape-item">— READY —</div>';
+  document.getElementById('drum-state').textContent='Form entries appear here automatically';
+  document.getElementById('draw-btn').textContent='🎲 START DRAW';
+  document.getElementById('podium-section').style.display='none';
+  updateAll();toast('Draw reset. Entries preserved.','success');
+}
+
+// ── TOAST ──
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ── SCROLL REVEAL ──
+// reveal handled by revObs2 below
+
+updateAll();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+// ── NAV SCROLL EFFECT ──
+window.addEventListener('scroll',()=>{
+  document.querySelector('.nav').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ── HERO FLOATING PARTICLES ──
+(function(){
+  const wrap = document.getElementById('hero-particles');
+  if(!wrap) return;
+  const colors=['rgba(26,107,94,','rgba(201,168,76,','rgba(42,160,144,'];
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.className='hero-particle';
+    const size=3+Math.random()*6;
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    const opacity=(Math.random()*.4+.2).toFixed(2);
+    el.style.cssText=`
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:${Math.random()*30}%;
+      background:${color}${opacity});
+      animation-duration:${6+Math.random()*10}s;
+      animation-delay:${Math.random()*8}s;
+    `;
+    wrap.appendChild(el);
+  }
+})();
+
+// ── ENHANCED SCROLL REVEAL ──
+const revObs2 = new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('vis'), i*60);
+    }
+  });
+},{threshold:.08, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal, .reveal-up, .reveal-left, .reveal-scale').forEach(el=>revObs2.observe(el));
+
+
+// ── REVEAL FALLBACK (for constrained viewports / iframes) ──
+setTimeout(()=>{
+  document.querySelectorAll('.reveal,.reveal-up,.reveal-left,.reveal-scale').forEach(el=>{
+    el.classList.add('vis');
+  });
+}, 400);
+
+</script>
+
+<!-- Facebook SDK -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous"
+  src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0"
+  nonce="ard2025"></script>
+
+<!-- Instagram embed script -->
+<script async src="https://www.instagram.com/embed.js"></script>
+
+<!-- TikTok embed script -->
+<script async src="https://www.tiktok.com/embed.js"></script>
+
+</body>
+</html>

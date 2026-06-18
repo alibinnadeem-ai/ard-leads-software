@@ -1,0 +1,29 @@
+{
+  "name": "ard-event-platform-next",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ARD Developers event platform migrated to one Next.js app with Prisma/Neon.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "db:generate": "prisma generate",
+    "db:push": "node scripts/db-push.js",
+    "db:studio": "prisma studio",
+    "db:seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "axios": "latest",
+    "jspdf": "latest",
+    "next": "latest",
+    "nodemailer": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "three": "latest",
+    "twilio": "latest"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
+}

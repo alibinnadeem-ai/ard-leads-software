@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id             String       @id @default(uuid())
+  name           String
+  phone          String
+  email          String?
+  delivery       String       @default("wa")
+  interest       String?
+  source         String       @default("Event QR Form")
+  event          String       @default("ARD Developers Event 2025")
+  ipAddress      String?
+  userAgent      String?
+  clickupTaskId  String?
+  zapierSent     Boolean      @default(false)
+  emailSent      Boolean      @default(false)
+  whatsappSent   Boolean      @default(false)
+  pdfGenerated   Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  raffleEntry    RaffleEntry?
+
+  @@index([phone])
+  @@index([createdAt])
+}
+
+model RaffleEntry {
+  id        String   @id @default(uuid())
+  leadId    String   @unique
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  eventDate String
+  entryNum  Int
+  isWinner  Boolean  @default(false)
+  place     Int?
+  prize     String?
+  drawnAt   DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([eventDate])
+  @@index([isWinner])
+}
+
+model DrawEvent {
+  id           String   @id @default(uuid())
+  eventDate    String   @unique
+  eventName    String   @default("ARD Developers Event 2025")
+  status       String   @default("open")
+  totalEntries Int      @default(0)
+  prize1       String   @default("ARD Developers Gift Hamper")
+  prize2       String   @default("ARD City Merchandise Set")
+  prize3       String   @default("ARD Branded Accessory")
+  winner1Id    String?
+  winner2Id    String?
+  winner3Id    String?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventDate])
+}
+
+model IntegrationLog {
+  id        String   @id @default(uuid())
+  leadId    String
+  type      String
+  status    String
+  response  String?
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+  @@index([type, status])
+}
