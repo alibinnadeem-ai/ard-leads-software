@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function POST(request) {
   const { pin } = await readJson(request)
 
-  if (!pin) return error('PIN required', 400)
+  if (!pin || pin.length < 4) return error('Password must be at least 4 characters', 400)
 
   if (!validateAdminPin(pin)) {
     logger.warn(`Failed admin login attempt from ${requestIp(request)}`)
