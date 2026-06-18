@@ -36,11 +36,21 @@
       toast('Email is required for brochure delivery', 'error')
       ok = false
     }
+
+    const selectedBoxes = [...document.querySelectorAll('#lf-chips input[type="checkbox"]:checked')]
+    if (selectedBoxes.length === 0) {
+      toast('Please select at least one project', 'error')
+      ok = false
+    }
     if (!ok) return
 
-    const interest = [...document.querySelectorAll('#lf-chips .chip.active')]
-      .map((chip) => chip.textContent.trim())
+    const interest = selectedBoxes
+      .map((box) => box.parentElement?.querySelector('span')?.textContent.trim() || '')
+      .filter(Boolean)
       .join(', ')
+    const selectedProjects = selectedBoxes
+      .map((box) => box.getAttribute('data-project'))
+      .filter(Boolean)
 
     const referrer = (() => {
       try { return document.referrer || '' } catch { return '' }
@@ -78,6 +88,7 @@
         leadId: data.data.leadId,
         entryNumber: data.data.entryNumber,
         name,
+        projects: selectedProjects,
       }
 
       $('lead-form').style.display = 'none'
@@ -85,7 +96,7 @@
       const entryEl = $('success-entry-num')
       if (entryEl) entryEl.textContent = `Entry #${data.data.entryNumber} · ${new Date().toLocaleDateString()}`
 
-      toast(`${name} entered the Lucky Draw 🎲`, 'success')
+      toast(`${name} entered the Lucky Draw`, 'success')
       postSize()
 
       notifyParent('ard:lead-success', {
@@ -100,7 +111,7 @@
     } finally {
       if (button) {
         button.disabled = false
-        button.innerHTML = originalLabel || 'Get Brochure & Enter Draw →'
+        button.innerHTML = originalLabel || 'Get Brochure & Enter Draw'
       }
     }
   }
@@ -110,15 +121,32 @@
       toast('Please submit the form first', 'error')
       return
     }
-    const url = new URL(`/api/leads/${activeLead.leadId}/pdf`, window.location.origin).toString()
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `ARD_Developers_Brochure_${String(activeLead.name || 'Lead').replace(/\s+/g, '_')}.pdf`
-    link.target = '_blank'
-    link.rel = 'noopener'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
+
+    const safeName = String(activeLead.name || 'Lead').replace(/\s+/g, '_')
+    const downloads = [
+      {
+        href: `/api/leads/${activeLead.leadId}/pdf`,
+        filename: `ARD_Developers_Brochure_${safeName}.pdf`,
+      },
+      ...(activeLead.projects || []).map((project) => ({
+        href: `/brochures/${project}.pdf`,
+        filename: `ARD_Developers_${project}_${safeName}.pdf`,
+      })),
+    ]
+
+    downloads.forEach(({ href, filename }, index) => {
+      const url = new URL(href, window.location.origin).toString()
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      link.target = '_blank'
+      link.rel = 'noopener'
+      document.body.appendChild(link)
+      setTimeout(() => {
+        link.click()
+        link.remove()
+      }, index * 350)
+    })
   }
 
   function notifyParent(type, payload) {
@@ -145,15 +173,28 @@
     } catch {}
   }
 
+  function initDeliveryOptions() {
+    const whatsappButton = $('d-wa')
+    const emailButton = $('d-em')
+
+    if (!whatsappEnabled && whatsappButton) {
+      whatsappButton.disabled = true
+      whatsappButton.setAttribute('aria-disabled', 'true')
+      whatsappButton.setAttribute('title', 'WhatsApp delivery is not available yet')
+      whatsappButton.classList.remove('active')
+    }
+
+    if (!whatsappEnabled && emailButton) {
+      emailButton.classList.add('active')
+    }
+  }
+
   function init() {
+    initDeliveryOptions()
     $('d-wa')?.addEventListener('click', () => setDelivery('wa'))
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
     $('lf-submit')?.addEventListener('click', submitLead)
     $('pdf-download-btn')?.addEventListener('click', downloadPDF)
-
-    document.querySelectorAll('#lf-chips .chip').forEach((chip) => {
-      chip.addEventListener('click', () => chip.classList.toggle('active'))
-    })
 
     setDelivery(delivery)
 

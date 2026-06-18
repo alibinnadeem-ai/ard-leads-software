@@ -529,14 +529,13 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
               Email
             </button>
           </div>
-          <label class="f-label">Interested In</label>
-          <div class="chips">
-            <button class="chip active" onclick="tc(this)">Residential Plots</button>
-            <button class="chip" onclick="tc(this)">Commercial Units</button>
-            <button class="chip" onclick="tc(this)">Apartments</button>
-            <button class="chip" onclick="tc(this)">Investment</button>
-            <button class="chip" onclick="tc(this)">Installment Plan</button>
-            <button class="chip" onclick="tc(this)">Overseas Pricing</button>
+          <label class="f-label">Interested In *</label>
+          <div class="chips" id="lf-chips">
+            <button class="chip" data-project="ard-marina" onclick="tc(this)">ARD Marina</button>
+            <button class="chip" data-project="qantara-rivarch" onclick="tc(this)">Qantara Rivarch</button>
+            <button class="chip" data-project="qantara-commercial" onclick="tc(this)">Qantara Commercial</button>
+            <button class="chip" data-project="the-boulevard" onclick="tc(this)">The Boulevard</button>
+            <button class="chip" data-project="green-zone-living" onclick="tc(this)">Green Zone Living</button>
           </div>
           <button class="sub-btn" onclick="submitLead()"><span class="shine"></span>Get Brochure & Enter Draw →</button>
           <p class="f-note">🎲 Auto-entered into today's Lucky Draw · 🔒 Private</p>

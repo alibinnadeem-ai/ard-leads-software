@@ -149,9 +149,18 @@
       toast('Email is required for brochure delivery', 'error')
       ok = false
     }
+
+    const selectedChips = [...document.querySelectorAll('#lf-chips .chip.active')]
+    if (selectedChips.length === 0) {
+      toast('Please select at least one project', 'error')
+      ok = false
+    }
     if (!ok) return
 
-    const interest = [...document.querySelectorAll('.chip.active')].map((chip) => chip.textContent).join(', ')
+    const interest = selectedChips.map((chip) => chip.textContent.trim()).join(', ')
+    const selectedProjects = selectedChips
+      .map((chip) => chip.getAttribute('data-project'))
+      .filter(Boolean)
     const lead = {
       name,
       phone,
@@ -182,6 +191,7 @@
         entryId: result.data.entryId,
         entryNumber: result.data.entryNumber,
         eventDate: result.data.eventDate,
+        projects: selectedProjects,
       }
 
       setDisplay('lead-form', 'none')
@@ -210,13 +220,35 @@
       return
     }
 
-    const link = document.createElement('a')
-    link.href = `/api/leads/${activeLead.leadId}/pdf`
-    link.download = `ARD_Developers_Brochure_${String(activeLead.name || 'Lead').replace(/\s+/g, '_')}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    toast('PDF download started', 'success')
+    const safeName = String(activeLead.name || 'Lead').replace(/\s+/g, '_')
+    const downloads = [
+      {
+        href: `/api/leads/${activeLead.leadId}/pdf`,
+        filename: `ARD_Developers_Brochure_${safeName}.pdf`,
+      },
+      ...(activeLead.projects || []).map((project) => ({
+        href: `/brochures/${project}.pdf`,
+        filename: `ARD_Developers_${project}_${safeName}.pdf`,
+      })),
+    ]
+
+    downloads.forEach(({ href, filename }, index) => {
+      const link = document.createElement('a')
+      link.href = href
+      link.download = filename
+      document.body.appendChild(link)
+      setTimeout(() => {
+        link.click()
+        link.remove()
+      }, index * 350)
+    })
+
+    toast(
+      downloads.length > 1
+        ? `Downloading ${downloads.length} PDFs`
+        : 'PDF download started',
+      'success'
+    )
   }
 
   function setIntegrationStatus(state, integrations) {
