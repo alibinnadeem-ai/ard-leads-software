@@ -92,6 +92,8 @@
         leadId: data.data.leadId,
         entryNumber: data.data.entryNumber,
       })
+
+      setTimeout(downloadPDF, 600)
     } catch (err) {
       toast(err.message || 'Failed to save lead', 'error')
       notifyParent('ard:lead-error', { message: err.message })
