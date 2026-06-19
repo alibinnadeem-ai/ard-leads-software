@@ -130,8 +130,8 @@ export default function EmbedPage() {
             </div>
           </div>
 
-          <button type="button" className="sub-btn" id="lf-submit">Get Brochure &amp; Enter Draw</button>
-          <p className="f-note">Auto-entered into today&apos;s Lucky Draw · Private</p>
+          <button type="button" className="sub-btn" id="lf-submit">Submit Form to Enter Draw</button>
+          <p className="f-note">Auto-entered into today&apos;s Lucky Draw</p>
         </div>
 
         <div className="success-view" id="success-view">
