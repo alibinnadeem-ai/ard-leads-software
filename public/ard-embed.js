@@ -123,30 +123,16 @@
     }
 
     const safeName = String(activeLead.name || 'Lead').replace(/\s+/g, '_')
-    const downloads = [
-      {
-        href: `/api/leads/${activeLead.leadId}/pdf`,
-        filename: `ARD_Developers_Brochure_${safeName}.pdf`,
-      },
-      ...(activeLead.projects || []).map((project) => ({
-        href: `/brochures/${project}.pdf`,
-        filename: `ARD_Developers_${project}_${safeName}.pdf`,
-      })),
-    ]
+    const projects = (activeLead.projects || []).filter(Boolean).join(',')
+    const href = `/api/leads/${activeLead.leadId}/bundle${projects ? `?projects=${encodeURIComponent(projects)}` : ''}`
 
-    downloads.forEach(({ href, filename }, index) => {
-      const url = new URL(href, window.location.origin).toString()
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      link.target = '_blank'
-      link.rel = 'noopener'
-      document.body.appendChild(link)
-      setTimeout(() => {
-        link.click()
-        link.remove()
-      }, index * 350)
-    })
+    const url = new URL(href, window.location.origin).toString()
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ARD_Developers_Brochures_${safeName}.zip`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
   }
 
   function notifyParent(type, payload) {

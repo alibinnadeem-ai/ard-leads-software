@@ -57,6 +57,7 @@ body{padding:24px;display:flex;justify-content:center}
 .dl-btn:hover{background:var(--green-hover)}
 .s-box{background:#f7f7f7;border:1px solid #ececec;border-radius:6px;padding:12px 14px;margin-top:16px;font-size:13px;color:var(--muted)}
 .s-box strong{color:var(--text);font-weight:600}
+.s-thanks{color:var(--green);font-weight:600;font-size:13px;margin-bottom:6px}
 .embed-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1a1a1a;color:#fff;border-radius:6px;padding:10px 16px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .embed-toast.show{opacity:1}
 .embed-toast.error{background:#c0392b}
@@ -137,12 +138,13 @@ export default function EmbedPage() {
         <div className="success-view" id="success-view">
           <div className="s-icon">✓</div>
           <h3>You&apos;re In the Draw!</h3>
-          <p>Your brochure is downloading now. If it doesn&apos;t start, tap the button below.</p>
+          <p>Your brochures are downloading now as a ZIP. If it doesn&apos;t start, tap the button below.</p>
           <button type="button" className="dl-btn" id="pdf-download-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-            Download Brochure
+            Download Brochures
           </button>
           <div className="s-box">
+            <div className="s-thanks">Thank you! Your form is submitted successfully</div>
             You&apos;re entered as <strong id="success-entry-num">—</strong>
           </div>
         </div>
