@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto'
 import { getPrisma } from '@/lib/prisma'
 import { json, error, readJson } from '@/lib/http'
 import { verifyAdminRequest } from '@/lib/admin-auth'
@@ -36,7 +37,8 @@ export async function POST(request) {
 
     if (pool.length === 0) return error('No eligible entries remaining', 400)
 
-    const winner = pool[Math.floor(Math.random() * pool.length)]
+    // Cryptographically secure, unbiased selection (no modulo bias, better entropy than Math.random).
+    const winner = pool[randomInt(pool.length)]
     const updatedEntry = await prisma.raffleEntry.update({
       where: { id: winner.id },
       data: { isWinner: true, place, prize, drawnAt: new Date() },

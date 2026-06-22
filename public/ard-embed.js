@@ -37,20 +37,15 @@
       ok = false
     }
 
-    const selectedBoxes = [...document.querySelectorAll('#lf-chips input[type="checkbox"]:checked')]
-    if (selectedBoxes.length === 0) {
-      toast('Please select at least one project', 'error')
+    const selectedBox = document.querySelector('#lf-chips input[type="checkbox"]:checked')
+    if (!selectedBox) {
+      toast('Please select a project', 'error')
       ok = false
     }
     if (!ok) return
 
-    const interest = selectedBoxes
-      .map((box) => box.parentElement?.querySelector('span')?.textContent.trim() || '')
-      .filter(Boolean)
-      .join(', ')
-    const selectedProjects = selectedBoxes
-      .map((box) => box.getAttribute('data-project'))
-      .filter(Boolean)
+    const interest = selectedBox?.parentElement?.querySelector('span')?.textContent.trim() || ''
+    const selectedProject = selectedBox?.getAttribute('data-project') || ''
 
     const referrer = (() => {
       try { return document.referrer || '' } catch { return '' }
@@ -88,7 +83,7 @@
         leadId: data.data.leadId,
         entryNumber: data.data.entryNumber,
         name,
-        projects: selectedProjects,
+        project: selectedProject,
       }
 
       $('lead-form').style.display = 'none'
@@ -117,19 +112,15 @@
   }
 
   function downloadPDF() {
-    if (!activeLead?.leadId) {
-      toast('Please submit the form first', 'error')
+    if (!activeLead?.project) {
+      toast('Please select a project first', 'error')
       return
     }
 
-    const safeName = String(activeLead.name || 'Lead').replace(/\s+/g, '_')
-    const projects = (activeLead.projects || []).filter(Boolean).join(',')
-    const href = `/api/leads/${activeLead.leadId}/bundle${projects ? `?projects=${encodeURIComponent(projects)}` : ''}`
-
+    const href = `/api/brochures/${encodeURIComponent(activeLead.project)}`
     const url = new URL(href, window.location.origin).toString()
     const link = document.createElement('a')
     link.href = url
-    link.download = `ARD_Developers_Brochures_${safeName}.zip`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -175,8 +166,22 @@
     }
   }
 
+  function initSingleSelect() {
+    const boxes = [...document.querySelectorAll('#lf-chips input[type="checkbox"]')]
+    boxes.forEach((box) => {
+      box.addEventListener('change', () => {
+        if (!box.checked) return
+        // Only one project may be selected — ticking one unticks the rest.
+        boxes.forEach((other) => {
+          if (other !== box) other.checked = false
+        })
+      })
+    })
+  }
+
   function init() {
     initDeliveryOptions()
+    initSingleSelect()
     $('d-wa')?.addEventListener('click', () => setDelivery('wa'))
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
     $('lf-submit')?.addEventListener('click', submitLead)

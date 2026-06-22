@@ -106,7 +106,7 @@ export default function EmbedPage() {
           </div>
 
           <div className="f-group">
-            <label className="f-label">Interested In<span className="req">*</span></label>
+            <label className="f-label">Interested In <span style={{ fontWeight: 400, color: 'var(--muted)' }}>(select one)</span><span className="req">*</span></label>
             <div className="checkboxes" id="lf-chips">
               <label className="checkbox">
                 <input type="checkbox" data-project="ard-marina" />
@@ -138,14 +138,15 @@ export default function EmbedPage() {
         <div className="success-view" id="success-view">
           <div className="s-icon">✓</div>
           <h3>You&apos;re In the Draw!</h3>
-          <p>Your brochures are downloading now as a ZIP. If it doesn&apos;t start, tap the button below.</p>
+          <p>Your brochure is downloading now. If it doesn&apos;t start, tap the button below.</p>
           <button type="button" className="dl-btn" id="pdf-download-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-            Download Brochures
+            Download Brochure
           </button>
           <div className="s-box">
             <div className="s-thanks">Thank you! Your form is submitted successfully</div>
-            You&apos;re entered as <strong id="success-entry-num">—</strong>
+            You&apos;re entered as <strong id="success-entry-num">—</strong>.
+            <br />Your personalized brochure has also been emailed to you.
           </div>
         </div>
       </div>
