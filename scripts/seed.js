@@ -1,4 +1,15 @@
 const { PrismaClient } = require('@prisma/client')
+const fs = require('node:fs')
+const path = require('node:path')
+const dotenv = require('dotenv')
+
+function loadEnvFile(file) {
+  if (!fs.existsSync(file)) return
+  dotenv.config({ path: file })
+}
+
+loadEnvFile(path.join(process.cwd(), '.env'))
+loadEnvFile(path.join(process.cwd(), '.env.local'))
 
 const prisma = new PrismaClient()
 

@@ -313,6 +313,7 @@
     setDisplay('reset-btn', 'block')
     renderEntries()
     updateDrum()
+    loadAdminStats()
   }
 
   function clearAdmin() {
@@ -366,6 +367,7 @@
       if ($('ef-phone')) $('ef-phone').value = ''
       if ($('ef-interest')) $('ef-interest').value = ''
 
+      if ($('pool-date-select')) $('pool-date-select').value = 'today'
       await loadPool({ silent: true })
       toast(`${name} added ✓`, 'success')
     } catch (err) {
@@ -424,6 +426,7 @@
 
     closeBulk()
     if ($('bulk-text')) $('bulk-text').value = ''
+    if ($('pool-date-select')) $('pool-date-select').value = 'today'
     await loadPool({ silent: true })
     toast(`${added} entries imported`, 'success')
   }
@@ -560,9 +563,10 @@
     }
   }
 
-  async function loadPool({ silent = false } = {}) {
+  async function loadPool({ silent = false, date = 'today' } = {}) {
     try {
-      const result = await api('/api/raffle/pool')
+      const query = date === 'all' ? '?date=all' : ''
+      const result = await api(`/api/raffle/pool${query}`)
       const data = result.data
       entries = (data.entries || []).map((entry) => ({
         ...entry,
@@ -571,6 +575,9 @@
       drawStep = winners().length
       applyPrizes(data.prizes)
       updateAll()
+      if (adminOK) {
+        await loadAdminStats()
+      }
       return data
     } catch (err) {
       if (!silent) console.warn('Pool load failed:', err.message)
@@ -635,6 +642,16 @@
     const button = $('draw-btn')
     if (!button) return
 
+    const isAllTime = $('pool-date-select')?.value === 'all'
+    setDisplay('reset-btn', adminOK && !isAllTime ? 'block' : 'none')
+
+    if (isAllTime) {
+      button.textContent = '🎲 START DRAW'
+      button.disabled = true
+      setText('drum-state', 'Switch view to "Today" to start the draw')
+      return
+    }
+
     if (drawStep >= 3) {
       button.textContent = '✓ All 3 Winners Drawn'
       button.disabled = true
@@ -642,11 +659,19 @@
       return
     }
 
+    if (!isDrawing) {
+      button.textContent = '🎲 START DRAW'
+    }
+
     button.disabled = eligibleEntries().length < 1 || isDrawing || !adminOK
 
-    if (!entries.length) setText('drum-state', 'Form entries appear here automatically')
-    else if (!adminOK) setText('drum-state', 'Unlock admin access to start the draw')
-    else if (!isDrawing) setText('drum-state', 'Ready for secure server-side draw')
+    if (!entries.length) {
+      setText('drum-state', 'Form entries appear here automatically')
+    } else if (!adminOK) {
+      setText('drum-state', 'Unlock admin access to start the draw')
+    } else if (!isDrawing) {
+      setText('drum-state', 'Ready for secure server-side draw')
+    }
   }
 
   function startTape(pool) {
@@ -940,6 +965,25 @@
         emailInput.previousElementSibling.textContent = 'Email *'
       }
     }
+  }
+
+  async function loadAdminStats() {
+    try {
+      const result = await api('/api/admin/stats', { headers: authHeaders() })
+      if (result.success && result.data) {
+        setText('admin-total-leads', result.data.overview.totalLeads)
+        setText('admin-total-entries', result.data.overview.totalEntries)
+        setText('admin-today-entries', result.data.overview.todayEntries)
+      }
+    } catch (err) {
+      console.warn('Failed to load admin stats:', err.message)
+    }
+  }
+
+  window.changePoolDate = async function changePoolDate() {
+    const select = $('pool-date-select')
+    const value = select?.value || 'today'
+    await loadPool({ silent: false, date: value })
   }
 
   function init() {

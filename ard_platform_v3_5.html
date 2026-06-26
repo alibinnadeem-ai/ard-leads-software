@@ -750,7 +750,25 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
           <div class="pin-row"><input class="pin-input" id="pin-input" type="password" placeholder="Admin Password" onkeydown="if(event.key==='Enter')checkPin()"/><button class="pin-btn" onclick="checkPin()">Unlock</button></div>
           <div class="pin-err" id="pin-err"></div>
         </div>
-        <div id="pin-ok" style="display:none"><span class="unlocked-msg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Admin access granted</span></div>
+        <div id="pin-ok" style="display:none">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span class="unlocked-msg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>Admin access granted</span>
+          </div>
+          <div id="admin-db-stats" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 10px; font-size: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
+            <div style="background: rgba(255,255,255,0.02); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);">
+              <div style="color: var(--muted); text-transform: uppercase; font-size: 8px; letter-spacing: 0.05em; margin-bottom: 2px;">DB Leads</div>
+              <div id="admin-total-leads" style="font-family: 'DM Mono'; font-size: 14px; font-weight: 600; color: var(--gold-l);">0</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);">
+              <div style="color: var(--muted); text-transform: uppercase; font-size: 8px; letter-spacing: 0.05em; margin-bottom: 2px;">DB Entries</div>
+              <div id="admin-total-entries" style="font-family: 'DM Mono'; font-size: 14px; font-weight: 600; color: var(--gold-l);">0</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);">
+              <div style="color: var(--muted); text-transform: uppercase; font-size: 8px; letter-spacing: 0.05em; margin-bottom: 2px;">Today Entry</div>
+              <div id="admin-today-entries" style="font-family: 'DM Mono'; font-size: 14px; font-weight: 600; color: var(--teal-xl);">0</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ADD ENTRY (admin) -->
@@ -772,7 +790,14 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
 
       <!-- ENTRIES -->
       <div class="entries-scroll">
-        <div class="e-hdr"><span class="e-ttl">Entry Pool</span><span class="e-cnt" id="e-count-label">0 entries</span></div>
+        <div class="e-hdr">
+          <span class="e-ttl">Entry Pool</span>
+          <select id="pool-date-select" onchange="changePoolDate()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 11px; padding: 4px 8px; outline: none; cursor: pointer; font-family: inherit;">
+            <option value="today" style="background: var(--dark3); color: var(--text);">Today</option>
+            <option value="all" style="background: var(--dark3); color: var(--text);">All-Time</option>
+          </select>
+          <span class="e-cnt" id="e-count-label">0 entries</span>
+        </div>
         <div id="entries-list"><div class="empty-state">No entries yet.<br>Submit the event form to join.</div></div>
       </div>
 
