@@ -790,14 +790,7 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
 
       <!-- ENTRIES -->
       <div class="entries-scroll">
-        <div class="e-hdr">
-          <span class="e-ttl">Entry Pool</span>
-          <select id="pool-date-select" onchange="changePoolDate()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 11px; padding: 4px 8px; outline: none; cursor: pointer; font-family: inherit;">
-            <option value="today" style="background: var(--dark3); color: var(--text);">Today</option>
-            <option value="all" style="background: var(--dark3); color: var(--text);">All-Time</option>
-          </select>
-          <span class="e-cnt" id="e-count-label">0 entries</span>
-        </div>
+        <div class="e-hdr"><span class="e-ttl">Entry Pool</span><span class="e-cnt" id="e-count-label">0 entries</span></div>
         <div id="entries-list"><div class="empty-state">No entries yet.<br>Submit the event form to join.</div></div>
       </div>
 

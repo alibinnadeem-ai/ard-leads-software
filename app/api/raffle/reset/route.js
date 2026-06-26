@@ -15,10 +15,16 @@ export async function POST(request) {
   const prisma = getPrisma()
 
   try {
-    await prisma.raffleEntry.updateMany({
-      where: { eventDate: date, isWinner: true },
-      data: { isWinner: false, place: null, prize: null, drawnAt: null },
-    })
+    const drawEvent = await prisma.drawEvent.findUnique({ where: { eventDate: date } })
+    if (drawEvent) {
+      const winnerIds = [drawEvent.winner1Id, drawEvent.winner2Id, drawEvent.winner3Id].filter(Boolean)
+      if (winnerIds.length > 0) {
+        await prisma.raffleEntry.updateMany({
+          where: { leadId: { in: winnerIds } },
+          data: { isWinner: false, place: null, prize: null, drawnAt: null },
+        })
+      }
+    }
 
     await prisma.drawEvent.update({
       where: { eventDate: date },
@@ -34,7 +40,8 @@ export async function POST(request) {
 
     logger.info(`Draw reset for ${date}`)
     return json({ success: true, message: `Draw reset for ${date}. All entries remain.` })
-  } catch {
+  } catch (err) {
+    logger.error('Reset failed:', err)
     return error('Reset failed', 500)
   }
 }

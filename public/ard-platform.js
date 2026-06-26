@@ -367,7 +367,6 @@
       if ($('ef-phone')) $('ef-phone').value = ''
       if ($('ef-interest')) $('ef-interest').value = ''
 
-      if ($('pool-date-select')) $('pool-date-select').value = 'today'
       await loadPool({ silent: true })
       toast(`${name} added ✓`, 'success')
     } catch (err) {
@@ -426,7 +425,6 @@
 
     closeBulk()
     if ($('bulk-text')) $('bulk-text').value = ''
-    if ($('pool-date-select')) $('pool-date-select').value = 'today'
     await loadPool({ silent: true })
     toast(`${added} entries imported`, 'success')
   }
@@ -563,10 +561,9 @@
     }
   }
 
-  async function loadPool({ silent = false, date = 'today' } = {}) {
+  async function loadPool({ silent = false } = {}) {
     try {
-      const query = date === 'all' ? '?date=all' : ''
-      const result = await api(`/api/raffle/pool${query}`)
+      const result = await api('/api/raffle/pool')
       const data = result.data
       entries = (data.entries || []).map((entry) => ({
         ...entry,
@@ -642,15 +639,7 @@
     const button = $('draw-btn')
     if (!button) return
 
-    const isAllTime = $('pool-date-select')?.value === 'all'
-    setDisplay('reset-btn', adminOK && !isAllTime ? 'block' : 'none')
-
-    if (isAllTime) {
-      button.textContent = '🎲 START DRAW'
-      button.disabled = true
-      setText('drum-state', 'Switch view to "Today" to start the draw')
-      return
-    }
+    setDisplay('reset-btn', adminOK ? 'block' : 'none')
 
     if (drawStep >= 3) {
       button.textContent = '✓ All 3 Winners Drawn'
@@ -978,12 +967,6 @@
     } catch (err) {
       console.warn('Failed to load admin stats:', err.message)
     }
-  }
-
-  window.changePoolDate = async function changePoolDate() {
-    const select = $('pool-date-select')
-    const value = select?.value || 'today'
-    await loadPool({ silent: false, date: value })
   }
 
   function init() {

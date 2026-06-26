@@ -19,9 +19,10 @@ export async function POST(request) {
     const drawEvent = await prisma.drawEvent.findUnique({ where: { eventDate: date } })
     if (!drawEvent) return error('No draw event found for this date', 404)
 
-    const existingWinners = await prisma.raffleEntry.count({
-      where: { eventDate: date, isWinner: true },
-    })
+    let existingWinners = 0
+    if (drawEvent.winner1Id) existingWinners++
+    if (drawEvent.winner2Id) existingWinners++
+    if (drawEvent.winner3Id) existingWinners++
 
     if (existingWinners >= 3) return error('All 3 winners have already been drawn', 400)
     if (drawEvent.status === 'complete') return error('Draw is already complete', 400)
@@ -31,7 +32,7 @@ export async function POST(request) {
     const prize = prizeMap[place]
 
     const pool = await prisma.raffleEntry.findMany({
-      where: { eventDate: date, isWinner: false },
+      where: { isWinner: false },
       include: { lead: true },
     })
 
