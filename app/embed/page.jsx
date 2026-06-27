@@ -92,6 +92,32 @@ export default function EmbedPage() {
           </div>
 
           <div className="f-group">
+            <div className="d-row">
+              <div>
+                <label className="f-label" htmlFor="lf-npi">NPI</label>
+                <input className="f-input" id="lf-npi" type="text" placeholder="1234567890" />
+              </div>
+              <div>
+                <label className="f-label" htmlFor="lf-speciality">Speciality</label>
+                <input className="f-input" id="lf-speciality" type="text" placeholder="Cardiology" />
+              </div>
+            </div>
+          </div>
+
+          <div className="f-group">
+            <div className="d-row">
+              <div>
+                <label className="f-label" htmlFor="lf-city">City</label>
+                <input className="f-input" id="lf-city" type="text" placeholder="Lahore" />
+              </div>
+              <div>
+                <label className="f-label" htmlFor="lf-state">State</label>
+                <input className="f-input" id="lf-state" type="text" placeholder="Punjab" />
+              </div>
+            </div>
+          </div>
+
+          <div className="f-group">
             <label className="f-label">Send Brochure Via<span className="req">*</span></label>
             <div className="d-row">
               <button type="button" className="d-opt" id="d-wa" data-delivery="wa">
