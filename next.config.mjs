@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['@prisma/client', 'prisma', 'nodemailer', 'twilio', 'jspdf'],
+  serverExternalPackages: ['@prisma/client', 'prisma', 'nodemailer', 'jspdf'],
   async headers() {
     return [
       {

@@ -14,14 +14,12 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "axios": "latest",
     "jspdf": "latest",
     "next": "latest",
     "nodemailer": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "three": "latest",
-    "twilio": "latest"
+    "three": "latest"
   },
   "devDependencies": {
     "prisma": "^6.19.3"

@@ -53,6 +53,23 @@ EMAIL_FROM="ARD Developers <alibinnadeem.ai@gmail.com>"
 
 Use a Gmail App Password for `SMTP_PASS`, not the normal account password.
 
+## WhatsApp Setup (360Messenger)
+
+WhatsApp brochure links are sent through [360Messenger](https://360messenger.com), which
+connects your own WhatsApp number (scan a QR in their dashboard, like WhatsApp Web — no
+Meta verification or message templates required).
+
+```env
+MESSENGER360_API_KEY=your_360messenger_api_key
+```
+
+Get the key from "Web Service Information" in the 360Messenger dashboard after connecting
+your number. If the key is missing, WhatsApp sending is skipped (leads still save and other
+integrations run).
+
+Note: 360Messenger is an unofficial gateway, so the connected number carries a WhatsApp
+ban risk on high-volume or cold sends — use a dedicated number, not a business-critical one.
+
 ## Main Routes
 
 - `/` - event page and lucky draw UI
