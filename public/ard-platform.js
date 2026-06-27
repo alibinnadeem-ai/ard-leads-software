@@ -235,7 +235,7 @@
         filename: `ARD_Developers_Brochure_${safeName}.pdf`,
       },
       ...(activeLead.projects || []).map((project) => ({
-        href: `/brochures/${project}.pdf`,
+        href: `/api/brochures/${project}`,
         filename: `ARD_Developers_${project}_${safeName}.pdf`,
       })),
     ]
@@ -257,6 +257,16 @@
         : 'PDF download started',
       'success'
     )
+  }
+
+  window.downloadAll = function downloadAll() {
+    const url = new URL('/api/brochures/all', window.location.origin).toString()
+    const link = document.createElement('a')
+    link.href = url
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    toast('Downloading all brochures', 'success')
   }
 
   function setIntegrationStatus(state, integrations) {

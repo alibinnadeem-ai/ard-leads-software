@@ -131,6 +131,16 @@
     link.remove()
   }
 
+  function downloadAll() {
+    const url = new URL('/api/brochures/all', window.location.origin).toString()
+    const link = document.createElement('a')
+    link.href = url
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    toast('Downloading all brochures', 'success')
+  }
+
   function notifyParent(type, payload) {
     if (window.parent === window) return
     try {
@@ -191,6 +201,7 @@
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
     $('lf-submit')?.addEventListener('click', submitLead)
     $('pdf-download-btn')?.addEventListener('click', downloadPDF)
+    $('download-all-btn')?.addEventListener('click', downloadAll)
 
     setDelivery(delivery)
 

@@ -12,6 +12,7 @@ const BROCHURE_FILES = {
   'qantara-commercial': { file: 'A5-Brochure-Qantara Commercial.pdf', label: 'Qantara Commercial' },
   'the-boulevard': { file: 'A5-Brochure-The Boulevard.pdf', label: 'The Boulevard' },
   'green-zone-living': { file: 'A5-Brochure-Green Zone Living.pdf', label: 'Green Zone Living' },
+  all: { file: 'Master File.pdf', label: 'All Projects' },
 }
 
 export async function GET(request, context) {

@@ -169,10 +169,14 @@ export default function EmbedPage() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             Download Brochure
           </button>
+          <button type="button" className="dl-btn" id="download-all-btn" style={{ background: 'transparent', border: '1px solid var(--green)', color: 'var(--green)', marginTop: '10px' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            Download All Brochures
+          </button>
           <div className="s-box">
             <div className="s-thanks">Thank you! Your form is submitted successfully</div>
             You&apos;re entered as <strong id="success-entry-num">—</strong>.
-            <br />Your personalized brochure has also been emailed to you.
+            <br />📧 We&apos;ve also emailed your brochure — check your inbox, and your <strong>spam/junk folder</strong> if you don&apos;t see it.
           </div>
         </div>
       </div>
