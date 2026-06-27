@@ -176,7 +176,7 @@ export default function EmbedPage() {
           <div className="s-box">
             <div className="s-thanks">Thank you! Your form is submitted successfully</div>
             You&apos;re entered as <strong id="success-entry-num">—</strong>.
-            <br />Your personalized brochure has also been emailed to you.
+            <br />📧 We&apos;ve also emailed your brochure — check your inbox, and your <strong>spam/junk folder</strong> if you don&apos;t see it.
           </div>
         </div>
       </div>
