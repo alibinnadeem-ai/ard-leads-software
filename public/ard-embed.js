@@ -26,7 +26,11 @@
     const name = $('lf-name')?.value.trim() || ''
     const phone = $('lf-phone')?.value.trim() || ''
     const email = $('lf-email')?.value.trim() || ''
-    ;['lf-name', 'lf-phone', 'lf-email'].forEach((id) => $(id)?.classList.remove('err'))
+    const npi = $('lf-npi')?.value.trim() || ''
+    const speciality = $('lf-speciality')?.value.trim() || ''
+    const city = $('lf-city')?.value.trim() || ''
+    const state = $('lf-state')?.value.trim() || ''
+    ;['lf-name', 'lf-phone', 'lf-email', 'lf-npi', 'lf-speciality', 'lf-city', 'lf-state'].forEach((id) => $(id)?.classList.remove('err'))
 
     let ok = true
     if (!name) { $('lf-name')?.classList.add('err'); ok = false }
@@ -53,6 +57,7 @@
 
     const payload = {
       name, phone, email,
+      npi, speciality, city, state,
       delivery, interest,
       source: referrer ? `Embed: ${referrer}` : 'Embed Form',
       event: 'ARD Developers Event 2025',

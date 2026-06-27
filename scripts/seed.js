@@ -33,12 +33,12 @@ async function main() {
   console.log('Draw event:', drawEvent.eventDate, '-', drawEvent.status)
 
   const sampleLeads = [
-    { name: 'Ahmed Raza', phone: '+92 300 1234567', email: 'ahmed@example.com', interest: 'GZL Residentials', delivery: 'wa' },
-    { name: 'Sara Malik', phone: '+92 311 9876543', email: 'sara@example.com', interest: 'Qantara Commercials', delivery: 'em' },
-    { name: 'Bilal Hussain', phone: '+92 321 4567890', email: null, interest: 'ARD Marina Commercials', delivery: 'wa' },
-    { name: 'Zainab Khan', phone: '+92 333 6543210', email: 'zainab@example.com', interest: 'GZL Residentials', delivery: 'wa' },
-    { name: 'Usman Ali', phone: '+92 345 1122334', email: null, interest: 'Qantara Commercials', delivery: 'wa' },
-    { name: 'Fatima Sheikh', phone: '+92 301 9988776', email: 'fatima@example.com', interest: 'ARD Marina Commercials', delivery: 'em' },
+    { name: 'Ahmed Raza', phone: '+92 300 1234567', email: 'ahmed@example.com', interest: 'GZL Residentials', delivery: 'wa', npi: '1029384756', speciality: 'Cardiology', city: 'Lahore', state: 'Punjab' },
+    { name: 'Sara Malik', phone: '+92 311 9876543', email: 'sara@example.com', interest: 'Qantara Commercials', delivery: 'em', npi: '9876543210', speciality: 'Dermatology', city: 'Karachi', state: 'Sindh' },
+    { name: 'Bilal Hussain', phone: '+92 321 4567890', email: null, interest: 'ARD Marina Commercials', delivery: 'wa', npi: '5647382910', speciality: 'Neurology', city: 'Islamabad', state: 'Federal' },
+    { name: 'Zainab Khan', phone: '+92 333 6543210', email: 'zainab@example.com', interest: 'GZL Residentials', delivery: 'wa', npi: null, speciality: 'Pediatrics', city: 'Rawalpindi', state: 'Punjab' },
+    { name: 'Usman Ali', phone: '+92 345 1122334', email: null, interest: 'Qantara Commercials', delivery: 'wa', npi: '1122334455', speciality: 'Orthopedics', city: 'Peshawar', state: 'KPK' },
+    { name: 'Fatima Sheikh', phone: '+92 301 9988776', email: 'fatima@example.com', interest: 'ARD Marina Commercials', delivery: 'em', npi: null, speciality: 'Gastroenterology', city: 'Multan', state: 'Punjab' },
   ]
 
   let created = 0

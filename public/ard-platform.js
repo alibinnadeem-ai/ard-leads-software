@@ -133,7 +133,11 @@
     const name = $('lf-name')?.value.trim() || ''
     const phone = $('lf-phone')?.value.trim() || ''
     const email = $('lf-email')?.value.trim() || ''
-    ;['lf-name', 'lf-phone', 'lf-email'].forEach((id) => $(id)?.classList.remove('err'))
+    const npi = $('lf-npi')?.value.trim() || ''
+    const speciality = $('lf-speciality')?.value.trim() || ''
+    const city = $('lf-city')?.value.trim() || ''
+    const state = $('lf-state')?.value.trim() || ''
+    ;['lf-name', 'lf-phone', 'lf-email', 'lf-npi', 'lf-speciality', 'lf-city', 'lf-state'].forEach((id) => $(id)?.classList.remove('err'))
 
     let ok = true
     if (!name) {
@@ -165,6 +169,10 @@
       name,
       phone,
       email,
+      npi,
+      speciality,
+      city,
+      state,
       delivery: dMode,
       interest,
       source: 'Event QR Form',
@@ -337,6 +345,10 @@
     const name = $('ef-name')?.value.trim() || ''
     const phone = $('ef-phone')?.value.trim() || ''
     const interest = $('ef-interest')?.value.trim() || ''
+    const npi = $('ef-npi')?.value.trim() || ''
+    const speciality = $('ef-speciality')?.value.trim() || ''
+    const city = $('ef-city')?.value.trim() || ''
+    const state = $('ef-state')?.value.trim() || ''
     ;['ef-name', 'ef-phone'].forEach((id) => $(id)?.classList.remove('err'))
 
     let ok = true
@@ -357,6 +369,10 @@
           name,
           phone,
           interest,
+          npi,
+          speciality,
+          city,
+          state,
           delivery: 'wa',
           source: 'Manual',
           event: 'ARD Developers Event 2025',
@@ -366,6 +382,10 @@
       if ($('ef-name')) $('ef-name').value = ''
       if ($('ef-phone')) $('ef-phone').value = ''
       if ($('ef-interest')) $('ef-interest').value = ''
+      if ($('ef-npi')) $('ef-npi').value = ''
+      if ($('ef-speciality')) $('ef-speciality').value = ''
+      if ($('ef-city')) $('ef-city').value = ''
+      if ($('ef-state')) $('ef-state').value = ''
 
       await loadPool({ silent: true })
       toast(`${name} added ✓`, 'success')
