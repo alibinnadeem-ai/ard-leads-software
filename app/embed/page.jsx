@@ -53,11 +53,16 @@ body{padding:24px;display:flex;justify-content:center}
 .s-icon{width:44px;height:44px;border-radius:50%;background:var(--green-soft);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--green);font-size:22px;font-weight:600}
 .success-view h3{font-size:20px;font-weight:600;margin-bottom:6px;color:var(--text)}
 .success-view p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:18px}
-.dl-btn{padding:11px 22px;background:var(--green);border:none;border-radius:6px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
-.dl-btn:hover{background:var(--green-hover)}
-.s-box{background:#f7f7f7;border:1px solid #ececec;border-radius:6px;padding:12px 14px;margin-top:16px;font-size:13px;color:var(--muted)}
+.dl-row{display:flex;gap:10px;margin-top:4px}
+.dl-btn{flex:1;padding:11px 16px;background:var(--green);border:1px solid var(--green);border-radius:8px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s}
+.dl-btn:hover{background:var(--green-hover);border-color:var(--green-hover)}
+.dl-btn-alt{background:transparent;color:var(--green)}
+.dl-btn-alt:hover{background:var(--green-soft);border-color:var(--green)}
+.s-box{background:var(--green-soft);border:1px solid rgba(0,78,89,.16);border-radius:10px;padding:14px 16px;margin-top:18px;font-size:13px;color:var(--muted);line-height:1.6}
 .s-box strong{color:var(--text);font-weight:600}
-.s-thanks{color:var(--green);font-weight:600;font-size:13px;margin-bottom:6px}
+.s-thanks{color:var(--green);font-weight:700;font-size:13px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(0,78,89,.12)}
+.s-line{margin:0 0 6px}
+.s-line:last-child{margin-bottom:0}
 .embed-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#1a1a1a;color:#fff;border-radius:6px;padding:10px 16px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .embed-toast.show{opacity:1}
 .embed-toast.error{background:#c0392b}
@@ -164,19 +169,21 @@ export default function EmbedPage() {
         <div className="success-view" id="success-view">
           <div className="s-icon">✓</div>
           <h3>You&apos;re In the Draw!</h3>
-          <p>Your brochure is downloading now. If it doesn&apos;t start, tap the button below.</p>
-          <button type="button" className="dl-btn" id="pdf-download-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-            Download Brochure
-          </button>
-          <button type="button" className="dl-btn" id="download-all-btn" style={{ background: 'transparent', border: '1px solid var(--green)', color: 'var(--green)', marginTop: '10px' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-            Download All Brochures
-          </button>
+          <p>Your brochure is downloading now. If it doesn&apos;t start, tap a button below.</p>
+          <div className="dl-row">
+            <button type="button" className="dl-btn" id="pdf-download-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              Download Brochure
+            </button>
+            <button type="button" className="dl-btn dl-btn-alt" id="download-all-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              Download All Brochures
+            </button>
+          </div>
           <div className="s-box">
             <div className="s-thanks">Thank you! Your form is submitted successfully</div>
-            You&apos;re entered as <strong id="success-entry-num">—</strong>.
-            <br />📧 We&apos;ve also emailed your brochure — check your inbox, and your <strong>spam/junk folder</strong> if you don&apos;t see it.
+            <p className="s-line">You&apos;re entered as <strong id="success-entry-num">—</strong>.</p>
+            <p className="s-line">📧 We&apos;ve also emailed your brochure — check your inbox, and your <strong>spam/junk folder</strong>{' '}if you don&apos;t see it.</p>
           </div>
         </div>
       </div>
