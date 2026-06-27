@@ -80,6 +80,9 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
 .chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;background:transparent;font-family:'DM Sans'}
 .chip.active{border-color:var(--teal-l);color:var(--text);background:rgba(26,107,94,.18)}
+.chip-all{border-color:var(--gold);color:var(--gold);font-weight:600}
+.chip-all.active{background:var(--gold);border-color:var(--gold);color:#10100c}
+.chip-disabled{opacity:.35;pointer-events:none}
 .sub-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--teal),var(--teal-xl));border:none;border-radius:10px;color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans';transition:all .25s;position:relative;overflow:hidden}
 .sub-btn:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(26,107,94,.4)}
 .shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transform:skewX(-20deg)}
@@ -556,6 +559,7 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
             <button class="chip" data-project="qantara-commercial" onclick="tc(this)">Qantara Commercial</button>
             <button class="chip" data-project="the-boulevard" onclick="tc(this)">The Boulevard</button>
             <button class="chip" data-project="green-zone-living" onclick="tc(this)">Green Zone Living</button>
+            <button class="chip chip-all" data-all="1" onclick="toggleAll(this)">📦 Download All — interested in everything</button>
           </div>
           <button class="sub-btn" onclick="submitLead()"><span class="shine"></span>Get Brochure & Enter Draw →</button>
           <p class="f-note">🎲 Auto-entered into today's Lucky Draw · 🔒 Private</p>
@@ -568,10 +572,6 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
           <button class="btn-p" id="pdf-download-btn" style="width:100%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="downloadPDF()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download Brochure PDF
-          </button>
-          <button class="btn-p" id="download-all-btn" style="width:100%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:1px solid var(--teal-l);color:var(--teal-l)" onclick="downloadAll()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download All Brochures
           </button>
           <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px">📧 We've also emailed your brochure — check your inbox, and your <strong style="color:var(--teal-l)">spam/junk folder</strong> if you don't see it.</p>
           <div class="success-socials">

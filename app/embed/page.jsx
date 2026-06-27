@@ -159,6 +159,10 @@ export default function EmbedPage() {
                 <input type="checkbox" data-project="green-zone-living" />
                 <span>Green Zone Living</span>
               </label>
+              <label className="checkbox">
+                <input type="checkbox" data-all="1" id="lf-all" />
+                <span>📦 Download All — interested in everything</span>
+              </label>
             </div>
           </div>
 
@@ -174,10 +178,6 @@ export default function EmbedPage() {
             <button type="button" className="dl-btn" id="pdf-download-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Download Brochure
-            </button>
-            <button type="button" className="dl-btn dl-btn-alt" id="download-all-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-              Download All Brochures
             </button>
           </div>
           <div className="s-box">
