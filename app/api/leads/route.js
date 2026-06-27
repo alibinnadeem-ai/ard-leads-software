@@ -64,7 +64,7 @@ export async function POST(request) {
     const integrations = await Promise.allSettled([
       createTask(leadWithEntry),
       sendZapier(leadWithEntry, backendUrl),
-      lead.email
+      lead.delivery === 'em' && lead.email
         ? sendBrochure(leadWithEntry, backendUrl)
         : Promise.resolve({ skipped: true }),
       lead.delivery === 'wa'
