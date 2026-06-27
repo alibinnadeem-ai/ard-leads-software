@@ -41,15 +41,17 @@
       ok = false
     }
 
-    const selectedBox = document.querySelector('#lf-chips input[type="checkbox"]:checked')
-    if (!selectedBox) {
-      toast('Please select a project', 'error')
+    const allBox = document.querySelector('#lf-chips input[data-all]:checked')
+    const selectedBox = document.querySelector('#lf-chips input[type="checkbox"]:checked:not([data-all])')
+    if (!allBox && !selectedBox) {
+      toast('Please select a project (or Download All)', 'error')
       ok = false
     }
     if (!ok) return
 
-    const interest = selectedBox?.parentElement?.querySelector('span')?.textContent.trim() || ''
-    const selectedProject = selectedBox?.getAttribute('data-project') || ''
+    const downloadAll = !!allBox
+    const interest = downloadAll ? 'All Projects' : (selectedBox?.parentElement?.querySelector('span')?.textContent.trim() || '')
+    const selectedProject = downloadAll ? '' : (selectedBox?.getAttribute('data-project') || '')
 
     const referrer = (() => {
       try { return document.referrer || '' } catch { return '' }
@@ -89,6 +91,7 @@
         entryNumber: data.data.entryNumber,
         name,
         project: selectedProject,
+        downloadAll,
       }
 
       $('lead-form').style.display = 'none'
@@ -117,6 +120,16 @@
   }
 
   function downloadPDF() {
+    if (activeLead?.downloadAll) {
+      const url = new URL('/api/brochures/all', window.location.origin).toString()
+      const link = document.createElement('a')
+      link.href = url
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast('Downloading all brochures', 'success')
+      return
+    }
     if (!activeLead?.project) {
       toast('Please select a project first', 'error')
       return
@@ -129,16 +142,6 @@
     document.body.appendChild(link)
     link.click()
     link.remove()
-  }
-
-  function downloadAll() {
-    const url = new URL('/api/brochures/all', window.location.origin).toString()
-    const link = document.createElement('a')
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    toast('Downloading all brochures', 'success')
   }
 
   function notifyParent(type, payload) {
@@ -201,7 +204,6 @@
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
     $('lf-submit')?.addEventListener('click', submitLead)
     $('pdf-download-btn')?.addEventListener('click', downloadPDF)
-    $('download-all-btn')?.addEventListener('click', downloadAll)
 
     setDelivery(delivery)
 

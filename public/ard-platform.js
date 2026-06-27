@@ -126,7 +126,16 @@
   }
 
   window.tc = function tc(element) {
+    if (element.classList.contains('chip-disabled')) return
     element.classList.toggle('active')
+  }
+
+  window.toggleAll = function toggleAll(element) {
+    const on = element.classList.toggle('active')
+    document.querySelectorAll('#lf-chips .chip:not(.chip-all)').forEach((chip) => {
+      chip.classList.remove('active')
+      chip.classList.toggle('chip-disabled', on)
+    })
   }
 
   window.submitLead = async function submitLead() {
@@ -154,17 +163,19 @@
       ok = false
     }
 
-    const selectedChips = [...document.querySelectorAll('#lf-chips .chip.active')]
-    if (selectedChips.length === 0) {
-      toast('Please select at least one project', 'error')
+    const allChip = document.querySelector('#lf-chips .chip-all.active')
+    const selectedChips = [...document.querySelectorAll('#lf-chips .chip.active:not(.chip-all)')]
+    if (!allChip && selectedChips.length === 0) {
+      toast('Please select at least one project (or Download All)', 'error')
       ok = false
     }
     if (!ok) return
 
-    const interest = selectedChips.map((chip) => chip.textContent.trim()).join(', ')
-    const selectedProjects = selectedChips
-      .map((chip) => chip.getAttribute('data-project'))
-      .filter(Boolean)
+    const downloadAll = !!allChip
+    const interest = downloadAll ? 'All Projects' : selectedChips.map((chip) => chip.textContent.trim()).join(', ')
+    const selectedProjects = downloadAll
+      ? []
+      : selectedChips.map((chip) => chip.getAttribute('data-project')).filter(Boolean)
     const lead = {
       name,
       phone,
@@ -200,6 +211,7 @@
         entryNumber: result.data.entryNumber,
         eventDate: result.data.eventDate,
         projects: selectedProjects,
+        downloadAll,
       }
 
       setDisplay('lead-form', 'none')
@@ -225,6 +237,16 @@
   window.downloadPDF = function downloadPDF() {
     if (!activeLead?.leadId) {
       toast('Please submit the form first', 'error')
+      return
+    }
+
+    if (activeLead.downloadAll) {
+      const link = document.createElement('a')
+      link.href = new URL('/api/brochures/all', window.location.origin).toString()
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast('Downloading all brochures', 'success')
       return
     }
 
@@ -257,16 +279,6 @@
         : 'PDF download started',
       'success'
     )
-  }
-
-  window.downloadAll = function downloadAll() {
-    const url = new URL('/api/brochures/all', window.location.origin).toString()
-    const link = document.createElement('a')
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    toast('Downloading all brochures', 'success')
   }
 
   function setIntegrationStatus(state, integrations) {
