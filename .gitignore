@@ -7,3 +7,6 @@ dist
 *.log
 logs
 .DS_Store
+
+# Local database backups (contain personal data — never commit)
+backups/
