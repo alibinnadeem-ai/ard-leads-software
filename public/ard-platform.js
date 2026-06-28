@@ -18,6 +18,7 @@
   let activeLead = null
   let spinIv = null
   let adminToken = null
+  let iti = null
 
   async function api(path, options = {}) {
     const headers = new Headers(options.headers || {})
@@ -140,7 +141,7 @@
 
   window.submitLead = async function submitLead() {
     const name = $('lf-name')?.value.trim() || ''
-    const phone = $('lf-phone')?.value.trim() || ''
+    const phone = iti ? iti.getNumber() : ($('lf-phone')?.value.trim() || '')
     const email = $('lf-email')?.value.trim() || ''
     const npi = $('lf-npi')?.value.trim() || ''
     const speciality = $('lf-speciality')?.value.trim() || ''
@@ -155,6 +156,10 @@
     }
     if (!phone) {
       $('lf-phone')?.classList.add('err')
+      ok = false
+    } else if (iti && !iti.isValidNumber()) {
+      $('lf-phone')?.classList.add('err')
+      toast('Please enter a valid phone number', 'error')
       ok = false
     }
     if (dMode === 'em' && !email) {
@@ -1011,8 +1016,19 @@
     }
   }
 
+  function initPhoneInput() {
+    const el = $('lf-phone')
+    if (!el || typeof window.intlTelInput !== 'function') return
+    iti = window.intlTelInput(el, {
+      initialCountry: 'pk',
+      countryOrder: ['pk'],
+      separateDialCode: true,
+    })
+  }
+
   function init() {
     initDeliveryOptions()
+    initPhoneInput()
     initThreeCity()
     initVisualPolish()
     initAdminFromSession()

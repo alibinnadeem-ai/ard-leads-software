@@ -73,6 +73,8 @@ export default function EmbedPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <link rel="stylesheet" href="/intl-tel-input/css/intlTelInput.min.css" />
+      <style dangerouslySetInnerHTML={{ __html: '.iti{width:100%}' }} />
       <div className="form-card" id="ard-embed-root">
         <div className="form-card-header">
           <p className="eyebrow">Exclusive Event Offer</p>
@@ -191,6 +193,7 @@ export default function EmbedPage() {
       </div>
       <div className="embed-toast" id="embed-toast" role="status" aria-live="polite" />
 
+      <Script src="/intl-tel-input/js/intlTelInputWithUtils.min.js" strategy="beforeInteractive" />
       <Script src="/ard-embed.js" strategy="afterInteractive" />
     </>
   )
