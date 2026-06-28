@@ -96,6 +96,7 @@ export default function EmbedPage() {
             <input className="f-input" id="lf-email" type="email" placeholder="you@example.com" autoComplete="email" />
           </div>
 
+          {/* NPI / Speciality — hidden on the sister site (data kept in DB). Uncomment to restore.
           <div className="f-group">
             <div className="d-row">
               <div>
@@ -108,6 +109,7 @@ export default function EmbedPage() {
               </div>
             </div>
           </div>
+          */}
 
           <div className="f-group">
             <div className="d-row">

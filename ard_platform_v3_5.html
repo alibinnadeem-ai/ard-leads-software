@@ -1259,7 +1259,7 @@ async function checkPin(){
   const pin=document.getElementById('pin-input').value;
   if(pin.length<4){document.getElementById('pin-err').textContent='Password must be at least 4 characters';setTimeout(()=>document.getElementById('pin-err').textContent='',2000);return}
   try{
-    const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});
+    const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin,scope:'raffle'})});
     if(res.ok){
       adminOK=true;
       document.getElementById('pin-gate').style.display='none';

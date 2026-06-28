@@ -319,7 +319,7 @@
     try {
       const result = await api('/api/admin/login', {
         method: 'POST',
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ pin, scope: 'raffle' }),
       })
 
       adminToken = result.token
@@ -1000,7 +1000,7 @@
 
   async function loadAdminStats() {
     try {
-      const result = await api('/api/admin/stats', { headers: authHeaders() })
+      const result = await api('/api/raffle/stats', { headers: authHeaders() })
       if (result.success && result.data) {
         setText('admin-total-leads', result.data.overview.totalLeads)
         setText('admin-total-entries', result.data.overview.totalEntries)

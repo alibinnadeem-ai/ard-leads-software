@@ -8,7 +8,7 @@ import { logger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
 export async function POST(request) {
-  const auth = verifyAdminRequest(request)
+  const auth = verifyAdminRequest(request, 'raffle')
   if (!auth.ok) return auth.response
 
   const body = await readJson(request)
