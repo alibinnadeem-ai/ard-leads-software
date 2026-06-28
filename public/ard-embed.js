@@ -3,6 +3,7 @@
   const whatsappEnabled = false
   let delivery = whatsappEnabled ? 'wa' : 'em'
   let activeLead = null
+  let iti = null
 
   function toast(message, type = '') {
     const el = $('embed-toast')
@@ -24,7 +25,7 @@
 
   async function submitLead() {
     const name = $('lf-name')?.value.trim() || ''
-    const phone = $('lf-phone')?.value.trim() || ''
+    const phone = iti ? iti.getNumber() : ($('lf-phone')?.value.trim() || '')
     const email = $('lf-email')?.value.trim() || ''
     // NPI/Speciality hidden on the sister site — sent empty (data kept in DB). To restore, use the commented reads.
     const npi = '' // $('lf-npi')?.value.trim() || ''
@@ -36,6 +37,7 @@
     let ok = true
     if (!name) { $('lf-name')?.classList.add('err'); ok = false }
     if (!phone) { $('lf-phone')?.classList.add('err'); ok = false }
+    else if (iti && !iti.isValidNumber()) { $('lf-phone')?.classList.add('err'); toast('Please enter a valid phone number', 'error'); ok = false }
     if (delivery === 'em' && !email) {
       $('lf-email')?.classList.add('err')
       toast('Email is required for brochure delivery', 'error')
@@ -198,8 +200,19 @@
     })
   }
 
+  function initPhoneInput() {
+    const el = $('lf-phone')
+    if (!el || typeof window.intlTelInput !== 'function') return
+    iti = window.intlTelInput(el, {
+      initialCountry: 'pk',
+      countryOrder: ['pk'],
+      separateDialCode: true,
+    })
+  }
+
   function init() {
     initDeliveryOptions()
+    initPhoneInput()
     initSingleSelect()
     $('d-wa')?.addEventListener('click', () => setDelivery('wa'))
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
