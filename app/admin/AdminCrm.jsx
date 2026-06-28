@@ -179,7 +179,7 @@ export default function AdminCrm() {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ pin, scope: 'crm' }),
       })
       const body = await res.json()
       if (!res.ok || !body?.success) throw new Error(body?.error || 'Incorrect password')

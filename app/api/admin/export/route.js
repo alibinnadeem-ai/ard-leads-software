@@ -13,7 +13,7 @@ function csvCell(value) {
 }
 
 export async function GET(request) {
-  const auth = verifyAdminRequest(request)
+  const auth = verifyAdminRequest(request, 'crm')
   if (!auth.ok) return auth.response
 
   const date = request.nextUrl.searchParams.get('date') || todayStr()

@@ -26,8 +26,9 @@
     const name = $('lf-name')?.value.trim() || ''
     const phone = $('lf-phone')?.value.trim() || ''
     const email = $('lf-email')?.value.trim() || ''
-    const npi = $('lf-npi')?.value.trim() || ''
-    const speciality = $('lf-speciality')?.value.trim() || ''
+    // NPI/Speciality hidden on the sister site — sent empty (data kept in DB). To restore, use the commented reads.
+    const npi = '' // $('lf-npi')?.value.trim() || ''
+    const speciality = '' // $('lf-speciality')?.value.trim() || ''
     const city = $('lf-city')?.value.trim() || ''
     const state = $('lf-state')?.value.trim() || ''
     ;['lf-name', 'lf-phone', 'lf-email', 'lf-npi', 'lf-speciality', 'lf-city', 'lf-state'].forEach((id) => $(id)?.classList.remove('err'))
