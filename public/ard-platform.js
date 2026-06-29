@@ -1026,14 +1026,22 @@
     })
   }
 
+  function safe(label, fn) {
+    try { fn() } catch (err) { console.warn(`${label} init failed (non-critical):`, err?.message || err) }
+  }
+
   function init() {
-    initDeliveryOptions()
-    initPhoneInput()
-    initThreeCity()
-    initVisualPolish()
-    initAdminFromSession()
+    // Critical path first: render state and load entries. These must never be
+    // blocked by a decorative feature (e.g. WebGL) failing to initialize.
+    safe('delivery options', initDeliveryOptions)
+    safe('admin session', initAdminFromSession)
     updateAll()
     loadPool({ silent: true })
+
+    // Non-critical / decorative — isolated so a failure can't abort the rest.
+    safe('phone input', initPhoneInput)
+    safe('3D background', initThreeCity)
+    safe('visual polish', initVisualPolish)
   }
 
   if (document.readyState === 'loading') {

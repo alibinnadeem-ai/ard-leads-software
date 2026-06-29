@@ -116,7 +116,18 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
    RAFFLE VIEW
 ══════════════════════ */
 .raffle-layout{display:grid;grid-template-columns:1fr 360px;min-height:calc(100vh - 70px);background:url('/lucky-draw-bg.jpg') center/cover no-repeat fixed}
-@media(max-width:900px){.raffle-layout{grid-template-columns:1fr}}
+@media(max-width:900px){
+  .raffle-layout{
+    display:block;
+    background-image:url('/lucky-draw-bg-mobile.jpg');
+    background-size:100% auto;            /* full-width poster, natural height */
+    background-position:top center;
+    background-repeat:no-repeat;
+    background-attachment:scroll;
+    background-color:#083940;             /* matches poster's bottom edge, fills below */
+    min-height:0;
+  }
+}
 .stage{padding:40px 36px;display:flex;flex-direction:column;align-items:center;border-right:1px solid var(--border)}
 .stage-title{font-family:'Bebas Neue';font-size:clamp(40px,6vw,72px);text-align:center;line-height:.95;margin-bottom:6px}
 .stage-title .g{color:var(--gold)}
@@ -228,6 +239,24 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
 .stat-l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .reset-btn{margin:12px 22px;background:transparent;border:1px solid rgba(242,75,74,.2);border-radius:8px;color:rgba(242,75,74,.55);font-size:12px;padding:8px;cursor:pointer;font-family:'DM Sans';transition:all .2s;width:calc(100% - 44px)}
 .reset-btn:hover{border-color:#E24B4A;color:#E24B4A}
+
+/* Raffle mobile: drop draw controls into the poster's empty glowing middle (33.7%–81.2% of poster) */
+@media(max-width:900px){
+  .stage{
+    border-right:none;
+    box-sizing:border-box;
+    min-height:177.78vw;                 /* = poster height (900x1600 image) */
+    padding:62vw 16px 42vw;              /* top → just below branding, bottom → clear the WIN graphic */
+    justify-content:center;
+  }
+  .stage-title,.stage-sub{display:none}  /* poster already carries the branding */
+  .drum-wrap{width:min(50vw,185px);height:min(50vw,185px);margin-bottom:14px}
+  .name-tape{width:min(42vw,155px)}
+  .drum-count{font-size:42px}
+  .drum-state{margin-bottom:16px}
+  .draw-btn{font-size:21px;padding:13px 38px}
+  .panel{border-top:1px solid var(--border)}
+}
 
 /* Modals & overlays */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
@@ -375,7 +404,18 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
   background: url('/event-bg.jpg') center/cover no-repeat fixed;
 }
 @media (max-width: 900px) {
-  .hero-form-split { grid-template-columns: 1fr; grid-template-rows: auto auto; }
+  .hero-form-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    background-image: url('/event-bg-mobile.jpg');
+    background-size: 100% auto;        /* full-width poster, natural height */
+    background-position: top center;
+    background-color: #083940;          /* matches poster's bottom edge, fills below */
+    padding-top: 177.78%;               /* poster height (900x1600) → form starts below it */
+  }
+  /* show poster (with its text) at top, then form, then the site copy */
+  .hf-right { order: 1; }
+  .hf-left  { order: 2; }
 }
 
 /* LEFT PANEL */
@@ -386,7 +426,17 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
   position: relative;
   z-index: 1;
 }
-@media (max-width: 900px) { .hf-left { padding: 40px 24px 24px; align-items: flex-start; } }
+@media (max-width: 900px) {
+  .hf-left {
+    padding: 26px 22px;
+    align-items: flex-start;
+    background: rgba(5,14,12,.72);       /* dark panel so copy is readable over the image */
+    backdrop-filter: blur(6px);
+    margin: 0 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+}
 
 .hf-left-inner { max-width: 520px; }
 
@@ -399,7 +449,7 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
   position: relative;
   z-index: 2;
 }
-@media (max-width: 900px) { .hf-right { padding: 0 20px 40px; } }
+@media (max-width: 900px) { .hf-right { padding: 24px 20px 40px; } }
 
 /* Override form-card for embedded context */
 .hf-right .form-card {
