@@ -31,6 +31,19 @@ export async function POST(request) {
   const date = todayStr()
   const backendUrl = appUrl(request)
 
+  // Enforce one entry per mobile number (global). The unique index on
+  // Lead.phoneNormalized is the source of truth; this lookup just lets us
+  // return a friendly message before attempting the insert.
+  if (validation.data.phoneNormalized) {
+    const existing = await prisma.lead.findUnique({
+      where: { phoneNormalized: validation.data.phoneNormalized },
+      select: { id: true },
+    })
+    if (existing) {
+      return error('This number is already entered in the draw.', 409)
+    }
+  }
+
   try {
     const { lead, raffleEntry } = await prisma.$transaction(async (tx) => {
       const createdLead = await tx.lead.create({
@@ -121,6 +134,10 @@ export async function POST(request) {
       { status: 201 }
     )
   } catch (err) {
+    // Race: a concurrent submit with the same number won the unique index.
+    if (err?.code === 'P2002') {
+      return error('This number is already entered in the draw.', 409)
+    }
     logger.error('Lead creation failed:', err)
     return error('Failed to save lead. Please try again.', 500)
   }

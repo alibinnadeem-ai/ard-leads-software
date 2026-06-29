@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Lead {
-  id             String       @id @default(uuid())
-  name           String
-  phone          String
-  email          String?
+  id              String       @id @default(uuid())
+  name            String
+  phone           String
+  phoneNormalized String?      @unique
+  email           String?
   delivery       String       @default("wa")
   interest       String?
   source         String       @default("Event QR Form")
