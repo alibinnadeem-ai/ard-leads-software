@@ -515,6 +515,27 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
   }
 }
 
+/* ── md+ (≥901px): the banner images already carry the promo copy, so hide our duplicate text ── */
+@media (min-width: 901px) {
+  /* Landing (event-bg.jpg): keep .hf-left in the grid so the form stays in the right column,
+     but drop its headline/tagline/pills (and the now-pointless divider). */
+  .hf-left-inner { display: none; }
+  .hf-left::after { display: none; }
+  /* Lucky Draw (lucky-draw-bg.jpg): banner already shows the "WIN 5 MARLA PLOTS" headline. */
+  .stage-title,
+  .stage-sub { display: none; }
+  /* Center the drum + START DRAW vertically in the stage column (was pinned to the top). */
+  .stage { justify-content: center; }
+  /* Pin the panel to the viewport so its stats row stays fixed at the bottom of the screen.
+     The entry-pool list fills the gap and scrolls internally; the stats never scroll away. */
+  .panel { position: sticky; top: 70px; align-self: start; height: calc(100vh - 70px); overflow: hidden; }
+  .entries-scroll { flex: 1 1 auto; min-height: 0; max-height: none; }
+  /* Rebalance the drum readout: winner name bigger, pool count smaller. */
+  .name-tape { height: 58px; }
+  .tape-item { height: 58px; font-size: 22px; }
+  .drum-count { font-size: 36px; }
+}
+
 </style>
 </head>
 <body>
