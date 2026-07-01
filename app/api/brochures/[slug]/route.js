@@ -1,9 +1,4 @@
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
 import { error } from '@/lib/http'
-import { logger } from '@/lib/logger'
-
-export const runtime = 'nodejs'
 
 // Maps "Interested In" slugs to the brochure files in /public/PDFs.
 const BROCHURE_FILES = {
@@ -15,25 +10,18 @@ const BROCHURE_FILES = {
   all: { file: 'Master File.pdf', label: 'All Projects' },
 }
 
+// Large PDFs (e.g. the ~36MB master) can't be returned through a serverless function —
+// Vercel caps function responses at 4.5MB (413 FUNCTION_PAYLOAD_TOO_LARGE). Instead we
+// redirect to the static asset in /public/PDFs, which Vercel's CDN serves directly with
+// no size limit. The Content-Disposition header (next.config.mjs) forces the download.
 export async function GET(request, context) {
   const { slug } = await context.params
   const brochure = BROCHURE_FILES[slug]
 
   if (!brochure) return error('Brochure not found', 404)
 
-  try {
-    const data = await readFile(path.join(process.cwd(), 'public', 'PDFs', brochure.file))
-    const filename = `ARD_Developers_${brochure.label.replace(/\s+/g, '_')}.pdf`
-
-    return new Response(data, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'public, max-age=3600',
-      },
-    })
-  } catch (err) {
-    logger.error(`Brochure file missing: ${brochure.file}`, err)
-    return error('Brochure file unavailable', 404)
-  }
+  return new Response(null, {
+    status: 307,
+    headers: { Location: `/PDFs/${encodeURIComponent(brochure.file)}` },
+  })
 }

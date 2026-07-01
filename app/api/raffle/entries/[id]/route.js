@@ -5,7 +5,7 @@ import { verifyAdminRequest } from '@/lib/admin-auth'
 export const runtime = 'nodejs'
 
 export async function DELETE(request, context) {
-  const auth = verifyAdminRequest(request)
+  const auth = verifyAdminRequest(request, 'raffle')
   if (!auth.ok) return auth.response
 
   const { id } = await context.params

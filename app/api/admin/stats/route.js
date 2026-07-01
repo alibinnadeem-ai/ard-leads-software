@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
 export async function GET(request) {
-  const auth = verifyAdminRequest(request)
+  const auth = verifyAdminRequest(request, 'crm')
   if (!auth.ok) return auth.response
 
   const prisma = getPrisma()

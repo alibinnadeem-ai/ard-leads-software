@@ -9,6 +9,13 @@ const nextConfig = {
           { key: 'Content-Security-Policy', value: 'frame-ancestors *' },
         ],
       },
+      {
+        // Brochure PDFs are served statically (CDN) — force download instead of opening inline.
+        source: '/PDFs/:path*',
+        headers: [
+          { key: 'Content-Disposition', value: 'attachment' },
+        ],
+      },
     ]
   },
 }

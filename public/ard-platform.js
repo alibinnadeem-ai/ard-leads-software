@@ -14,11 +14,13 @@
   let isDrawing = false
   let adminOK = false
   let poolLoading = false
+  let poolLoaded = false
   const whatsappEnabled = false
   let dMode = whatsappEnabled ? 'wa' : 'em'
   let activeLead = null
   let spinIv = null
   let adminToken = null
+  let iti = null
 
   async function api(path, options = {}) {
     const headers = new Headers(options.headers || {})
@@ -146,12 +148,21 @@
   }
 
   window.tc = function tc(element) {
+    if (element.classList.contains('chip-disabled')) return
     element.classList.toggle('active')
+  }
+
+  window.toggleAll = function toggleAll(element) {
+    const on = element.classList.toggle('active')
+    document.querySelectorAll('#lf-chips .chip:not(.chip-all)').forEach((chip) => {
+      chip.classList.remove('active')
+      chip.classList.toggle('chip-disabled', on)
+    })
   }
 
   window.submitLead = async function submitLead() {
     const name = $('lf-name')?.value.trim() || ''
-    const phone = $('lf-phone')?.value.trim() || ''
+    const phone = iti ? iti.getNumber() : ($('lf-phone')?.value.trim() || '')
     const email = $('lf-email')?.value.trim() || ''
     const npi = $('lf-npi')?.value.trim() || ''
     const speciality = $('lf-speciality')?.value.trim() || ''
@@ -167,6 +178,10 @@
     if (!phone) {
       $('lf-phone')?.classList.add('err')
       ok = false
+    } else if (iti && !iti.isValidNumber()) {
+      $('lf-phone')?.classList.add('err')
+      toast('Please enter a valid phone number', 'error')
+      ok = false
     }
     if (dMode === 'em' && !email) {
       $('lf-email')?.classList.add('err')
@@ -174,17 +189,19 @@
       ok = false
     }
 
-    const selectedChips = [...document.querySelectorAll('#lf-chips .chip.active')]
-    if (selectedChips.length === 0) {
-      toast('Please select at least one project', 'error')
+    const allChip = document.querySelector('#lf-chips .chip-all.active')
+    const selectedChips = [...document.querySelectorAll('#lf-chips .chip.active:not(.chip-all)')]
+    if (!allChip && selectedChips.length === 0) {
+      toast('Please select at least one project (or Download All)', 'error')
       ok = false
     }
     if (!ok) return
 
-    const interest = selectedChips.map((chip) => chip.textContent.trim()).join(', ')
-    const selectedProjects = selectedChips
-      .map((chip) => chip.getAttribute('data-project'))
-      .filter(Boolean)
+    const downloadAll = !!allChip
+    const interest = downloadAll ? 'All Projects' : selectedChips.map((chip) => chip.textContent.trim()).join(', ')
+    const selectedProjects = downloadAll
+      ? []
+      : selectedChips.map((chip) => chip.getAttribute('data-project')).filter(Boolean)
     const lead = {
       name,
       phone,
@@ -220,6 +237,7 @@
         entryNumber: result.data.entryNumber,
         eventDate: result.data.eventDate,
         projects: selectedProjects,
+        downloadAll,
       }
 
       setDisplay('lead-form', 'none')
@@ -245,6 +263,16 @@
   window.downloadPDF = function downloadPDF() {
     if (!activeLead?.leadId) {
       toast('Please submit the form first', 'error')
+      return
+    }
+
+    if (activeLead.downloadAll) {
+      const link = document.createElement('a')
+      link.href = new URL('/api/brochures/all', window.location.origin).toString()
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast('Downloading all brochures', 'success')
       return
     }
 
@@ -277,16 +305,6 @@
         : 'PDF download started',
       'success'
     )
-  }
-
-  window.downloadAll = function downloadAll() {
-    const url = new URL('/api/brochures/all', window.location.origin).toString()
-    const link = document.createElement('a')
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    toast('Downloading all brochures', 'success')
   }
 
   function setIntegrationStatus(state, integrations) {
@@ -327,7 +345,7 @@
     try {
       const result = await api('/api/admin/login', {
         method: 'POST',
-        body: JSON.stringify({ pin }),
+        body: JSON.stringify({ pin, scope: 'raffle' }),
       })
 
       adminToken = result.token
@@ -573,14 +591,23 @@
     setText('drum-state', `Drawing ${MED[drawStep + 1]} ${PLN[drawStep + 1]}...`)
     startTape(pool)
 
-    setTimeout(async () => {
+    // Fire the draw request immediately so the winner is ready by the time the
+    // countdown finishes. (.catch keeps it from throwing as an unhandled rejection
+    // while the 10s countdown plays out — it's re-awaited below.)
+    const drawRequest = (async () => {
+      await savePrizes()
+      return api('/api/raffle/draw', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({}),
+      })
+    })()
+    drawRequest.catch(() => {})
+
+    ;(async () => {
       try {
-        await savePrizes()
-        const result = await api('/api/raffle/draw', {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({}),
-        })
+        await runCountdown(10)
+        const result = await drawRequest
 
         const winner = {
           id: result.data.winner.entryId,
@@ -599,6 +626,7 @@
         setTimeout(() => showAnnounce(winner, result.data.place, result.data.prize), 350)
         updatePodium()
       } catch (err) {
+        $('countdown')?.classList.remove('open')
         if (err.status === 401 || err.status === 403) clearAdmin()
         stopTape()
         toast(err.message || 'Draw failed. Please try again.', 'error')
@@ -607,7 +635,7 @@
         if (button) button.textContent = '🎲 START DRAW'
         updateDrum()
       }
-    }, 2400 + Math.random() * 800)
+    })()
   }
 
   async function savePrizes() {
@@ -670,6 +698,7 @@
         phone: entry.rawPhone || entry.phone,
       }))
       drawStep = winners().length
+      poolLoaded = true
       applyPrizes(data.prizes)
       poolLoading = false
       updateAll()
@@ -682,6 +711,7 @@
       entries = []
       drawStep = 0
       poolLoading = false
+      poolLoaded = true
       updateAll()
       setText('drum-state', 'Connect Neon and run the database setup to load entries')
       return null
@@ -711,12 +741,14 @@
     if (!list) return
 
     if (poolLoading && !entries.length) {
-      list.innerHTML = '<div class="empty-state loading-state"><span class="load-pulse"></span>Loading entries from database...</div>'
+      list.innerHTML = '<div class="empty-state loading-state"><span class="entries-spinner"></span>Loading entries from database...</div>'
       return
     }
 
     if (!entries.length) {
-      list.innerHTML = '<div class="empty-state">No entries yet.<br>Submit the event form to join.</div>'
+      list.innerHTML = poolLoaded
+        ? '<div class="empty-state">No entries yet.<br>Submit the event form to join.</div>'
+        : '<div class="empty-state loading-state"><span class="entries-spinner"></span>Loading entries...</div>'
       return
     }
 
@@ -771,6 +803,64 @@
     } else if (!isDrawing) {
       setText('drum-state', 'Ready for secure server-side draw')
     }
+  }
+
+  function runCountdown(from = 10) {
+    return new Promise((resolve) => {
+      const overlay = $('countdown')
+      const numEl = $('cd-num')
+      const labelEl = $('cd-label')
+      if (!overlay || !numEl) {
+        resolve()
+        return
+      }
+
+      const restart = () => {
+        // retrigger the CSS entrance animation on each change
+        numEl.style.animation = 'none'
+        void numEl.offsetWidth
+        numEl.style.animation = ''
+      }
+
+      overlay.classList.add('open')
+      numEl.classList.remove('cd-over')
+      if (labelEl) {
+        labelEl.textContent = 'And the winner is…'
+        labelEl.classList.remove('cd-label-over')
+      }
+
+      let n = from
+      numEl.textContent = n
+      numEl.classList.toggle('cd-low', n <= 3)
+      restart()
+
+      const iv = setInterval(() => {
+        n -= 1
+        if (n >= 1) {
+          numEl.textContent = n
+          numEl.classList.toggle('cd-low', n <= 3)
+          restart()
+          return
+        }
+
+        clearInterval(iv)
+        // Countdown is over → celebratory beat, then resolve to reveal results
+        numEl.classList.remove('cd-low')
+        numEl.classList.add('cd-over')
+        numEl.textContent = '🎉'
+        restart()
+        if (labelEl) {
+          labelEl.textContent = 'Countdown over!'
+          labelEl.classList.add('cd-label-over')
+        }
+
+        setTimeout(() => {
+          overlay.classList.remove('open')
+          numEl.classList.remove('cd-over')
+          resolve()
+        }, 1100)
+      }, 1000)
+    })
   }
 
   function startTape(pool) {
@@ -1068,7 +1158,7 @@
 
   async function loadAdminStats() {
     try {
-      const result = await api('/api/admin/stats', { headers: authHeaders() })
+      const result = await api('/api/raffle/stats', { headers: authHeaders() })
       if (result.success && result.data) {
         setText('admin-total-leads', result.data.overview.totalLeads)
         setText('admin-total-entries', result.data.overview.totalEntries)
@@ -1079,13 +1169,32 @@
     }
   }
 
+  function initPhoneInput() {
+    const el = $('lf-phone')
+    if (!el || typeof window.intlTelInput !== 'function') return
+    iti = window.intlTelInput(el, {
+      initialCountry: 'pk',
+      countryOrder: ['pk'],
+      separateDialCode: true,
+    })
+  }
+
+  function safe(label, fn) {
+    try { fn() } catch (err) { console.warn(`${label} init failed (non-critical):`, err?.message || err) }
+  }
+
   function init() {
-    initDeliveryOptions()
-    initThreeCity()
-    initVisualPolish()
-    initAdminFromSession()
+    // Critical path first: render state and load entries. These must never be
+    // blocked by a decorative feature (e.g. WebGL) failing to initialize.
+    safe('delivery options', initDeliveryOptions)
+    safe('admin session', initAdminFromSession)
     updateAll()
     loadPool({ silent: true })
+
+    // Non-critical / decorative — isolated so a failure can't abort the rest.
+    safe('phone input', initPhoneInput)
+    safe('3D background', initThreeCity)
+    safe('visual polish', initVisualPolish)
   }
 
   if (document.readyState === 'loading') {

@@ -86,4 +86,11 @@ ban risk on high-volume or cold sends — use a dedicated number, not a business
 - `/api/admin/login` - admin PIN login
 - `/api/admin/export` - CSV export
 
-Default local admin PIN is `2025`. Override it with `ADMIN_PIN` in `.env.local`.
+There are two independent passwords, set in `.env.local`:
+
+- `ADMIN_PIN` - unlocks the `/admin` CRM page only.
+- `RAFFLE_PIN` - unlocks the lucky-draw operator controls only.
+
+A login for one area cannot access the other. The login endpoint takes a `scope`
+(`crm` or `raffle`) and mints a role-scoped token; each protected endpoint verifies
+the matching role.

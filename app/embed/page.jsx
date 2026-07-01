@@ -73,6 +73,8 @@ export default function EmbedPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <link rel="stylesheet" href="/intl-tel-input/css/intlTelInput.min.css" />
+      <style dangerouslySetInnerHTML={{ __html: '.iti{width:100%}' }} />
       <div className="form-card" id="ard-embed-root">
         <div className="form-card-header">
           <p className="eyebrow">Exclusive Event Offer</p>
@@ -96,6 +98,7 @@ export default function EmbedPage() {
             <input className="f-input" id="lf-email" type="email" placeholder="you@example.com" autoComplete="email" />
           </div>
 
+          {/* NPI / Speciality — hidden on the sister site (data kept in DB). Uncomment to restore.
           <div className="f-group">
             <div className="d-row">
               <div>
@@ -108,6 +111,7 @@ export default function EmbedPage() {
               </div>
             </div>
           </div>
+          */}
 
           <div className="f-group">
             <div className="d-row">
@@ -159,6 +163,10 @@ export default function EmbedPage() {
                 <input type="checkbox" data-project="green-zone-living" />
                 <span>Green Zone Living</span>
               </label>
+              <label className="checkbox">
+                <input type="checkbox" data-all="1" id="lf-all" />
+                <span>📦 Download All — interested in everything</span>
+              </label>
             </div>
           </div>
 
@@ -175,10 +183,6 @@ export default function EmbedPage() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Download Brochure
             </button>
-            <button type="button" className="dl-btn dl-btn-alt" id="download-all-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-              Download All Brochures
-            </button>
           </div>
           <div className="s-box">
             <div className="s-thanks">Thank you! Your form is submitted successfully</div>
@@ -189,6 +193,7 @@ export default function EmbedPage() {
       </div>
       <div className="embed-toast" id="embed-toast" role="status" aria-live="polite" />
 
+      <Script src="/intl-tel-input/js/intlTelInputWithUtils.min.js" strategy="beforeInteractive" />
       <Script src="/ard-embed.js" strategy="afterInteractive" />
     </>
   )

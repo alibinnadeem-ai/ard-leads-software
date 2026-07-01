@@ -7,7 +7,7 @@ import { defaultPrizes } from '@/lib/raffle'
 export const runtime = 'nodejs'
 
 export async function PATCH(request) {
-  const auth = verifyAdminRequest(request)
+  const auth = verifyAdminRequest(request, 'raffle')
   if (!auth.ok) return auth.response
 
   const body = await readJson(request)

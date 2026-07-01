@@ -3,6 +3,7 @@
   const whatsappEnabled = false
   let delivery = whatsappEnabled ? 'wa' : 'em'
   let activeLead = null
+  let iti = null
 
   function toast(message, type = '') {
     const el = $('embed-toast')
@@ -24,10 +25,11 @@
 
   async function submitLead() {
     const name = $('lf-name')?.value.trim() || ''
-    const phone = $('lf-phone')?.value.trim() || ''
+    const phone = iti ? iti.getNumber() : ($('lf-phone')?.value.trim() || '')
     const email = $('lf-email')?.value.trim() || ''
-    const npi = $('lf-npi')?.value.trim() || ''
-    const speciality = $('lf-speciality')?.value.trim() || ''
+    // NPI/Speciality hidden on the sister site — sent empty (data kept in DB). To restore, use the commented reads.
+    const npi = '' // $('lf-npi')?.value.trim() || ''
+    const speciality = '' // $('lf-speciality')?.value.trim() || ''
     const city = $('lf-city')?.value.trim() || ''
     const state = $('lf-state')?.value.trim() || ''
     ;['lf-name', 'lf-phone', 'lf-email', 'lf-npi', 'lf-speciality', 'lf-city', 'lf-state'].forEach((id) => $(id)?.classList.remove('err'))
@@ -35,21 +37,24 @@
     let ok = true
     if (!name) { $('lf-name')?.classList.add('err'); ok = false }
     if (!phone) { $('lf-phone')?.classList.add('err'); ok = false }
+    else if (iti && !iti.isValidNumber()) { $('lf-phone')?.classList.add('err'); toast('Please enter a valid phone number', 'error'); ok = false }
     if (delivery === 'em' && !email) {
       $('lf-email')?.classList.add('err')
       toast('Email is required for brochure delivery', 'error')
       ok = false
     }
 
-    const selectedBox = document.querySelector('#lf-chips input[type="checkbox"]:checked')
-    if (!selectedBox) {
-      toast('Please select a project', 'error')
+    const allBox = document.querySelector('#lf-chips input[data-all]:checked')
+    const selectedBox = document.querySelector('#lf-chips input[type="checkbox"]:checked:not([data-all])')
+    if (!allBox && !selectedBox) {
+      toast('Please select a project (or Download All)', 'error')
       ok = false
     }
     if (!ok) return
 
-    const interest = selectedBox?.parentElement?.querySelector('span')?.textContent.trim() || ''
-    const selectedProject = selectedBox?.getAttribute('data-project') || ''
+    const downloadAll = !!allBox
+    const interest = downloadAll ? 'All Projects' : (selectedBox?.parentElement?.querySelector('span')?.textContent.trim() || '')
+    const selectedProject = downloadAll ? '' : (selectedBox?.getAttribute('data-project') || '')
 
     const referrer = (() => {
       try { return document.referrer || '' } catch { return '' }
@@ -89,6 +94,7 @@
         entryNumber: data.data.entryNumber,
         name,
         project: selectedProject,
+        downloadAll,
       }
 
       $('lead-form').style.display = 'none'
@@ -117,6 +123,16 @@
   }
 
   function downloadPDF() {
+    if (activeLead?.downloadAll) {
+      const url = new URL('/api/brochures/all', window.location.origin).toString()
+      const link = document.createElement('a')
+      link.href = url
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      toast('Downloading all brochures', 'success')
+      return
+    }
     if (!activeLead?.project) {
       toast('Please select a project first', 'error')
       return
@@ -129,16 +145,6 @@
     document.body.appendChild(link)
     link.click()
     link.remove()
-  }
-
-  function downloadAll() {
-    const url = new URL('/api/brochures/all', window.location.origin).toString()
-    const link = document.createElement('a')
-    link.href = url
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    toast('Downloading all brochures', 'success')
   }
 
   function notifyParent(type, payload) {
@@ -194,14 +200,24 @@
     })
   }
 
+  function initPhoneInput() {
+    const el = $('lf-phone')
+    if (!el || typeof window.intlTelInput !== 'function') return
+    iti = window.intlTelInput(el, {
+      initialCountry: 'pk',
+      countryOrder: ['pk'],
+      separateDialCode: true,
+    })
+  }
+
   function init() {
     initDeliveryOptions()
+    initPhoneInput()
     initSingleSelect()
     $('d-wa')?.addEventListener('click', () => setDelivery('wa'))
     $('d-em')?.addEventListener('click', () => setDelivery('em'))
     $('lf-submit')?.addEventListener('click', submitLead)
     $('pdf-download-btn')?.addEventListener('click', downloadPDF)
-    $('download-all-btn')?.addEventListener('click', downloadAll)
 
     setDelivery(delivery)
 

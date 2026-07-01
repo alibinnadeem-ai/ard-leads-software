@@ -20,15 +20,20 @@ async function getLegacyMarkup() {
   return { styles, body }
 }
 
+const itiOverrides = `.iti{width:100%}.iti--separate-dial-code .iti__selected-dial-code{color:#F0F5F4}`
+
 export default async function HomePage() {
   const { styles, body } = await getLegacyMarkup()
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <link rel="stylesheet" href="/intl-tel-input/css/intlTelInput.min.css" />
+      <style dangerouslySetInnerHTML={{ __html: itiOverrides }} />
       <div dangerouslySetInnerHTML={{ __html: body }} />
       <div id="fb-root" />
 
+      <Script src="/intl-tel-input/js/intlTelInputWithUtils.min.js" strategy="beforeInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" strategy="beforeInteractive" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="beforeInteractive" />
       <Script src="/ard-platform.js" strategy="afterInteractive" />
