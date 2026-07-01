@@ -82,6 +82,14 @@ function fmtDate(value) {
   return d.toLocaleString('en-PK', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
+function filenameFromDisposition(disposition, fallback) {
+  if (!disposition) return fallback
+  const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (encoded?.[1]) return decodeURIComponent(encoded[1])
+  const plain = disposition.match(/filename="?([^"]+)"?/i)
+  return plain?.[1] || fallback
+}
+
 export default function AdminCrm() {
   const [authed, setAuthed] = useState(false)
   const [booting, setBooting] = useState(true)
@@ -192,9 +200,9 @@ export default function AdminCrm() {
     }
   }
 
-  async function exportCsv() {
+  async function exportExcel() {
     try {
-      const params = new URLSearchParams({ format: 'csv' })
+      const params = new URLSearchParams({ format: 'xls' })
       if (debouncedQ) params.set('q', debouncedQ)
       const res = await fetch(`/api/admin/leads?${params.toString()}`, { headers: authHeaders() })
       if (!res.ok) {
@@ -205,7 +213,10 @@ export default function AdminCrm() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `ARD_Leads_All_${new Date().toISOString().slice(0, 10)}.csv`
+      a.download = filenameFromDisposition(
+        res.headers.get('content-disposition'),
+        `ARD_Entries_All_${new Date().toISOString().slice(0, 10)}.xls`
+      )
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -257,7 +268,7 @@ export default function AdminCrm() {
           <div className="ac-sub">All lead records from the database</div>
         </div>
         <div className="ac-header-actions">
-          <button className="ac-btn ac-btn-ghost" onClick={exportCsv}>Export CSV</button>
+          <button className="ac-btn ac-btn-ghost" onClick={exportExcel}>Export Excel</button>
           <button className="ac-btn ac-btn-ghost" onClick={logout}>Logout</button>
         </div>
       </header>

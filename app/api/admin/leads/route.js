@@ -34,7 +34,7 @@ function csvCell(value) {
   return text
 }
 
-function toCsv(leads) {
+function exportRows(leads) {
   const headers = [
     'Entry #', 'Event Date', 'Name', 'Phone', 'Email', 'NPI', 'Speciality', 'City', 'State',
     'Interest', 'Delivery', 'Source', 'Email Sent', 'Winner', 'Prize', 'Registered At',
@@ -57,7 +57,47 @@ function toCsv(leads) {
     lead.raffleEntry?.prize || '',
     new Date(lead.createdAt).toLocaleString('en-PK'),
   ])
+
+  return { headers, rows }
+}
+
+function toCsv(leads) {
+  const { headers, rows } = exportRows(leads)
   return [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n')
+}
+
+function htmlCell(value) {
+  return (value == null ? '' : String(value))
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function toExcelHtml(leads) {
+  const { headers, rows } = exportRows(leads)
+  const tableRows = [headers, ...rows]
+    .map((row, rowIndex) => {
+      const tag = rowIndex === 0 ? 'th' : 'td'
+      return `<tr>${row.map((cell) => `<${tag} class="text">${htmlCell(cell)}</${tag}>`).join('')}</tr>`
+    })
+    .join('')
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 12px; }
+    th { background: #eaf2f1; font-weight: 700; }
+    th, td { border: 1px solid #cfd8d6; padding: 6px 8px; }
+    .text { mso-number-format: "\\@"; }
+  </style>
+</head>
+<body>
+  <table>${tableRows}</table>
+</body>
+</html>`
 }
 
 export async function GET(request) {
@@ -78,8 +118,22 @@ export async function GET(request) {
       })
       return new Response(toCsv(leads), {
         headers: {
-          'Content-Type': 'text/csv',
+          'Content-Type': 'text/csv; charset=utf-8',
           'Content-Disposition': `attachment; filename="ARD_Leads_All_${new Date().toISOString().slice(0, 10)}.csv"`,
+        },
+      })
+    }
+
+    if (searchParams.get('format') === 'xls') {
+      const leads = await prisma.lead.findMany({
+        where,
+        include: { raffleEntry: true },
+        orderBy: { createdAt: 'desc' },
+      })
+      return new Response(toExcelHtml(leads), {
+        headers: {
+          'Content-Type': 'application/vnd.ms-excel; charset=utf-8',
+          'Content-Disposition': `attachment; filename="ARD_Entries_All_${new Date().toISOString().slice(0, 10)}.xls"`,
         },
       })
     }

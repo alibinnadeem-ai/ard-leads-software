@@ -13,6 +13,7 @@
   let drawStep = 0
   let isDrawing = false
   let adminOK = false
+  let poolLoading = false
   const whatsappEnabled = false
   let dMode = whatsappEnabled ? 'wa' : 'em'
   let activeLead = null
@@ -104,6 +105,25 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;')
+  }
+
+  function filenameFromDisposition(disposition, fallback) {
+    if (!disposition) return fallback
+    const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+    if (encoded?.[1]) return decodeURIComponent(encoded[1])
+    const plain = disposition.match(/filename="?([^"]+)"?/i)
+    return plain?.[1] || fallback
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
   }
 
   window.switchView = function switchView(view) {
@@ -324,11 +344,13 @@
 
   function showAdminUi() {
     adminOK = true
+    if (!entries.length) poolLoading = true
     setDisplay('pin-gate', 'none')
     setDisplay('pin-ok', 'block')
     setDisplay('add-entry-sec', 'block')
     setDisplay('prizes-sec', 'block')
     setDisplay('reset-btn', 'block')
+    setDisplay('export-entries-btn', 'inline-flex')
     renderEntries()
     updateDrum()
     loadAdminStats()
@@ -337,13 +359,57 @@
   function clearAdmin() {
     adminOK = false
     adminToken = null
+    poolLoading = false
     safeSessionRemove(adminTokenKey)
     setDisplay('pin-gate', 'block')
     setDisplay('pin-ok', 'none')
     setDisplay('add-entry-sec', 'none')
     setDisplay('prizes-sec', 'none')
     setDisplay('reset-btn', 'none')
+    setDisplay('export-entries-btn', 'none')
     updateDrum()
+  }
+
+  window.exportEntriesExcel = async function exportEntriesExcel() {
+    if (!adminOK) {
+      toast('Unlock admin access first', 'error')
+      return
+    }
+
+    const button = $('export-entries-btn')
+    const previousText = button?.textContent || 'Export Excel'
+    if (button) {
+      button.disabled = true
+      button.textContent = 'Exporting...'
+    }
+
+    try {
+      const response = await fetch('/api/admin/leads?format=xls', { headers: authHeaders() })
+      if (response.status === 401 || response.status === 403) {
+        clearAdmin()
+        toast('Admin session expired', 'error')
+        return
+      }
+      if (!response.ok) {
+        const message = await response.text()
+        throw new Error(message || 'Export failed')
+      }
+
+      const blob = await response.blob()
+      const filename = filenameFromDisposition(
+        response.headers.get('content-disposition'),
+        `ARD_Entries_All_${new Date().toISOString().slice(0, 10)}.xls`
+      )
+      downloadBlob(blob, filename)
+      toast('Excel export downloaded', 'success')
+    } catch (err) {
+      toast(err.message || 'Export failed', 'error')
+    } finally {
+      if (button) {
+        button.disabled = false
+        button.textContent = previousText
+      }
+    }
   }
 
   window.addEntryManual = async function addEntryManual() {
@@ -592,6 +658,10 @@
   }
 
   async function loadPool({ silent = false } = {}) {
+    poolLoading = true
+    renderEntries()
+    if (!entries.length) setText('drum-state', 'Loading entries from database...')
+
     try {
       const result = await api('/api/raffle/pool')
       const data = result.data
@@ -601,6 +671,7 @@
       }))
       drawStep = winners().length
       applyPrizes(data.prizes)
+      poolLoading = false
       updateAll()
       if (adminOK) {
         await loadAdminStats()
@@ -610,6 +681,7 @@
       if (!silent) console.warn('Pool load failed:', err.message)
       entries = []
       drawStep = 0
+      poolLoading = false
       updateAll()
       setText('drum-state', 'Connect Neon and run the database setup to load entries')
       return null
@@ -635,8 +707,13 @@
 
   function renderEntries() {
     const list = $('entries-list')
-    setText('e-count-label', `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`)
+    setText('e-count-label', poolLoading && !entries.length ? 'Loading...' : `${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}`)
     if (!list) return
+
+    if (poolLoading && !entries.length) {
+      list.innerHTML = '<div class="empty-state loading-state"><span class="load-pulse"></span>Loading entries from database...</div>'
+      return
+    }
 
     if (!entries.length) {
       list.innerHTML = '<div class="empty-state">No entries yet.<br>Submit the event form to join.</div>'
@@ -684,7 +761,10 @@
 
     button.disabled = eligibleEntries().length < 1 || isDrawing || !adminOK
 
-    if (!entries.length) {
+    if (poolLoading && !entries.length) {
+      button.disabled = true
+      setText('drum-state', 'Loading entries from database...')
+    } else if (!entries.length) {
       setText('drum-state', 'Form entries appear here automatically')
     } else if (!adminOK) {
       setText('drum-state', 'Unlock admin access to start the draw')

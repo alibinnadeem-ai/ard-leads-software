@@ -39,19 +39,24 @@ Optional sample data:
 npm run db:seed
 ```
 
-## Gmail Email Setup
+## Zoho Email Setup
 
-The app is configured to send brochure emails through Gmail SMTP:
+The app sends brochure emails through SMTP. For Zoho Mail, set these values locally
+and in Vercel Environment Variables:
 
 ```env
-SMTP_HOST=smtp.gmail.com
+SMTP_HOST=smtp.zoho.com
 SMTP_PORT=587
-SMTP_USER=alibinnadeem.ai@gmail.com
-SMTP_PASS=your_gmail_app_password
-EMAIL_FROM="ARD Developers <alibinnadeem.ai@gmail.com>"
+SMTP_SECURE=false
+SMTP_USER=info@alibinnadeem.com
+SMTP_PASS=your_zoho_mailbox_password
+EMAIL_FROM="ARD Developers <info@alibinnadeem.com>"
 ```
 
-Use a Gmail App Password for `SMTP_PASS`, not the normal account password.
+For Zoho's free custom-domain mailbox plan, keep `smtp.zoho.com` with port `587`
+and `SMTP_SECURE=false`. Set `SMTP_PASS` to the Zoho Mail password for
+`info@alibinnadeem.com`. If two-factor authentication is enabled in Zoho later,
+replace it with a Zoho application-specific password.
 
 ## WhatsApp Setup (360Messenger)
 
