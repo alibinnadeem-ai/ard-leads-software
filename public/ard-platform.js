@@ -783,9 +783,12 @@
     if (drawStep >= 3) {
       button.textContent = '✓ All 3 Winners Drawn'
       button.disabled = true
+      button.classList.add('draw-done')
       setText('drum-state', 'Balloting complete!')
       return
     }
+
+    button.classList.remove('draw-done')
 
     if (!isDrawing) {
       button.textContent = '🎲 START DRAW'
@@ -1077,6 +1080,30 @@
     })
   }
 
+  function initLuckyDrawConfetti() {
+    const wrap = $('ld-confetti')
+    if (!wrap || wrap.dataset.ready) return
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    wrap.dataset.ready = '1'
+
+    // Subtle, muted palette so the loop reads as ambient sparkle, not a party burst.
+    const colors = ['#C9A84C', '#22897A', '#2BA090', '#E8C97A', '#6ECABA', '#F0F5F4']
+    const PIECES = 20
+
+    for (let i = 0; i < PIECES; i++) {
+      const piece = document.createElement('span')
+      piece.className = 'ld-cf'
+      const size = 5 + Math.random() * 6
+      const round = Math.random() > 0.5
+      const duration = 7 + Math.random() * 6
+      const delay = -Math.random() * duration // negative delay → already mid-fall, evenly staggered
+      const opacity = (0.2 + Math.random() * 0.28).toFixed(2)
+      const drift = Math.round(Math.random() * 44 - 22)
+      piece.style.cssText = `left:${(Math.random() * 100).toFixed(2)}%;width:${size.toFixed(1)}px;height:${(size * (round ? 1 : 1.7)).toFixed(1)}px;background:${colors[i % colors.length]};border-radius:${round ? '50%' : '2px'};--o:${opacity};--dx:${drift}px;animation-duration:${duration.toFixed(2)}s;animation-delay:${delay.toFixed(2)}s`
+      wrap.appendChild(piece)
+    }
+  }
+
   function initVisualPolish() {
     window.addEventListener('scroll', () => {
       document.querySelector('.nav')?.classList.toggle('scrolled', window.scrollY > 20)
@@ -1195,6 +1222,7 @@
     safe('phone input', initPhoneInput)
     safe('3D background', initThreeCity)
     safe('visual polish', initVisualPolish)
+    safe('lucky draw confetti', initLuckyDrawConfetti)
   }
 
   if (document.readyState === 'loading') {
