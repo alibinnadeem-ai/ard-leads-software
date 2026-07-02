@@ -1080,8 +1080,8 @@
     })
   }
 
-  function initLuckyDrawConfetti() {
-    const wrap = $('ld-confetti')
+  function initFallingConfetti(wrapId) {
+    const wrap = $(wrapId)
     if (!wrap || wrap.dataset.ready) return
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     wrap.dataset.ready = '1'
@@ -1104,10 +1104,24 @@
     }
   }
 
+  function initLuckyDrawConfetti() {
+    initFallingConfetti('ld-confetti')
+    initFallingConfetti('hero-confetti')
+  }
+
   function initVisualPolish() {
-    window.addEventListener('scroll', () => {
+    const syncScrollUi = () => {
       document.querySelector('.nav')?.classList.toggle('scrolled', window.scrollY > 20)
-    })
+
+      const cta = document.querySelector('.banner-cta')
+      const hero = document.querySelector('.hero-form-split')
+      if (cta && hero) {
+        cta.classList.toggle('is-hidden', hero.getBoundingClientRect().bottom <= cta.getBoundingClientRect().bottom)
+      }
+    }
+    window.addEventListener('scroll', syncScrollUi, { passive: true })
+    window.addEventListener('resize', syncScrollUi)
+    syncScrollUi()
 
     const wrap = $('hero-particles')
     if (wrap && !wrap.dataset.ready) {

@@ -451,6 +451,7 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
    HERO + FORM SPLIT — Full Viewport
 ══════════════════════════════════════ */
 .hero-form-split {
+  isolation: isolate;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 440px;
@@ -566,15 +567,15 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
      but drop its headline/tagline/pills (and the now-pointless divider). */
   .hf-left-inner { display: none; }
   .hf-left::after { display: none; }
-  /* The three lines are fixed to the viewport — like the fixed poster behind them — so they stay
-     put while the hero scrolls. They sit on a LOWER layer than the sections below (z-index:1 vs 2),
-     so as the social/footer "sheet" scrolls up it slides over and covers them, instead of them
-     floating on top of it. */
-  .banner-cta { display: block; position: fixed; left: 52px; bottom: 10vh; max-width: 460px; z-index: 1; }
+  /* Landing (event-bg.jpg): show only the button, since the poster bakes in the copy. */
+  .banner-cta { display: block; position: fixed; left: 52px; bottom: 14vh; max-width: 460px; z-index: 1; transition: opacity .18s ease; }
+  .banner-cta.is-hidden { opacity: 0; pointer-events: none; }
+  .banner-cta-eyebrow,
+  .banner-cta-title { display: none; }
   .social-section, .footer { position: relative; z-index: 2; }
   .banner-cta-eyebrow { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: rgba(240,245,244,.74); font-weight: 500; margin: 0 0 11px; }
   .banner-cta-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; font-size: clamp(21px, 2.05vw, 31px); line-height: 1.16; color: #fff; margin: 0 0 18px; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
-  .banner-cta-btn { font-size: 14px; padding: 12px 24px; background: rgba(5,14,12,.42); backdrop-filter: blur(4px); }
+  .banner-cta-btn { font-size: 15px; padding: 13px 26px; background: rgba(5,14,12,.42); backdrop-filter: blur(4px); }
   /* Lucky Draw (lucky-draw-bg.jpg): banner already shows the "WIN 5 MARLA PLOTS" headline. */
   .stage-title,
   .stage-sub { display: none; }
@@ -638,6 +639,9 @@ html,body{width:100%;min-height:100%;background:var(--dark);color:var(--text);fo
 <div class="view active" id="view-landing">
 
   <section class="hero-form-split">
+    <!-- Ambient looping confetti — same continuous fall effect as the Lucky Draw page -->
+    <div class="ld-confetti" id="hero-confetti" aria-hidden="true"></div>
+
     <!-- 3D city particles overlay -->
     <div class="hero-particles" id="hero-particles"></div>
 
