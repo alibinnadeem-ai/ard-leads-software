@@ -28,6 +28,8 @@ export default async function HomePage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <link rel="preload" as="image" href="/lucky-draw-bg.jpg" media="(min-width: 901px)" />
+      <link rel="preload" as="image" href="/lucky-draw-bg-mobile.jpg" media="(max-width: 900px)" />
       <link rel="stylesheet" href="/intl-tel-input/css/intlTelInput.min.css" />
       <style dangerouslySetInnerHTML={{ __html: itiOverrides }} />
       <div dangerouslySetInnerHTML={{ __html: body }} />
