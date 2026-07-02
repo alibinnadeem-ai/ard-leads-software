@@ -1224,9 +1224,17 @@
     try { fn() } catch (err) { console.warn(`${label} init failed (non-critical):`, err?.message || err) }
   }
 
+  function resetLandingScroll() {
+    if (window.location.pathname !== '/') return
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }))
+    setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }), 250)
+  }
+
   function init() {
     // Critical path first: render state and load entries. These must never be
     // blocked by a decorative feature (e.g. WebGL) failing to initialize.
+    resetLandingScroll()
     safe('delivery options', initDeliveryOptions)
     safe('admin session', initAdminFromSession)
     updateAll()
